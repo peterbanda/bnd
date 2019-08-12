@@ -1,0 +1,4 @@
+com/bnd/network/business/NeuralNetworkTest.class
+com/bnd/network/business/TopologyFactoryTest.class
+com/bnd/network/business/NetworkTest.class
+com/bnd/network/business/NetworkBOFactoryTest.class

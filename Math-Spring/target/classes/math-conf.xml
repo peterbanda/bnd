@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+ 	<import resource="classpath:core.xml"/>
+
+	<bean id="ioStreamFactory" class="com.bnd.math.business.learning.IOStreamFactory">
+		<constructor-arg ref="functionEvaluatorFactory"/>
+	</bean>
+
+	<bean id="functionEvaluatorFactory" class="com.bnd.function.business.FunctionEvaluatorFactoryImpl">
+		<constructor-arg ref="listEnumeratorFactory"/>
+	</bean>
+
+	<bean id="listEnumeratorFactory" class="com.bnd.function.enumerator.ListEnumeratorFactoryImpl"/>
+
+	<bean id="chromosomeRF" class="com.bnd.math.reflection.evo.ChromosomeReflectionProviderImpl">
+		<constructor-arg value="com.bnd.math.domain.evo.ArrayChromosome"/>
+	</bean>
+
+	<bean id="geneticAlgorithmBOFactory" class="com.bnd.math.business.evo.GeneticAlgorithmBOFactoryImpl">
+		<constructor-arg ref="chromosomeRF"/>
+	</bean>
+</beans>
