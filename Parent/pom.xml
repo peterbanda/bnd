@@ -7,6 +7,7 @@
 	<packaging>pom</packaging>
 	<name>bnd-parent</name>
 	<url>https://peterbanda.net</url>
+	<description>Libraries mostly for simulating ODEs, networks, chemistry, etc.</description>
 
 	<modules>
 		<module>../Core</module>
@@ -56,27 +57,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>2.2.1</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
-				<configuration>
-					<encoding>${project.build.sourceEncoding}</encoding>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
 						<goals>
 							<goal>jar</goal>
 						</goals>
@@ -84,19 +67,51 @@
 				</executions>
 			</plugin>
 
-			<!--<plugin>-->
-				<!--<artifactId>maven-deploy-plugin</artifactId>-->
-				<!--<version>2.8.2</version>-->
-				<!--<executions>-->
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+				<version>3.2.2</version>
+				<executions>
+
+					<execution>
+						<id>scala-compile</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>add-source</goal>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>doc-jar</goal>
+						</goals>
+					</execution>
+
 					<!--<execution>-->
-						<!--<id>default-deploy</id>-->
-						<!--<phase>deploy</phase>-->
+						<!--<id>test-compile</id>-->
 						<!--<goals>-->
-							<!--<goal>deploy</goal>-->
+							<!--<goal>testCompile</goal>-->
 						<!--</goals>-->
+						<!--<phase>test-compile</phase>-->
 					<!--</execution>-->
-				<!--</executions>-->
-			<!--</plugin>-->
+
+				</executions>
+
+				<configuration>
+					<args>
+						<arg>-optimise</arg>
+					</args>
+				</configuration>
+			</plugin>
 
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
@@ -143,6 +158,18 @@
 		</developer>
 	</developers>
 
+	<profiles>
+		<profile>
+			<id>disable-java8-doclint</id>
+			<activation>
+				<jdk>[1.8,)</jdk>
+			</activation>
+			<properties>
+				<additionalparam>-Xdoclint:none</additionalparam>
+			</properties>
+		</profile>
+	</profiles>
+
 	<distributionManagement>
 
 		<snapshotRepository>
@@ -156,33 +183,6 @@
 		</repository>
 
 	</distributionManagement>
-
-	<!--<profiles>-->
-
-		<!--&lt;!&ndash; GPG Signature on release &ndash;&gt;-->
-
-		<!--<profile>-->
-			<!--<id>release-sign-artifacts</id>-->
-			<!--<activation>-->
-				<!--<property>-->
-					<!--<name>performRelease</name>-->
-					<!--<value>true</value>-->
-				<!--</property>-->
-			<!--</activation>-->
-
-		<!--</profile>-->
-
-		<!--<profile>-->
-			<!--<id>disable-java8-doclint</id>-->
-			<!--<activation>-->
-				<!--<jdk>[1.8,)</jdk>-->
-			<!--</activation>-->
-			<!--<properties>-->
-				<!--<additionalparam>-Xdoclint:none</additionalparam>-->
-			<!--</properties>-->
-		<!--</profile>-->
-	<!--</profiles>-->
-
 
 	<licenses>
 		<license>
