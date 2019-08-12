@@ -1,4 +1,4 @@
-package com.bnd.math.business.rand;
+package com.bnd.math.business.rand
 
 import java.{lang => jl}
 
