@@ -17,6 +17,9 @@ import net.codingwell.scalaguice.ScalaModule
 
 import collection.JavaConverters._
 
+/**
+  * Guice network (Scala) module containing all the necessary components to create and run networks (including reservoirs)
+  */
 class NetworkModule extends ScalaModule {
 
   /////////////////

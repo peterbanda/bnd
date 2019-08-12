@@ -1,5 +1,8 @@
 package com.bnd.plotter
 
+/**
+  * Setting of the plot properties (mostly visual stuff)
+  */
 class PlotSetting {
   private var _title: String = ""
   private var _xLabel: String = "time"

@@ -39,6 +39,14 @@
 		</dependency>
 	</dependencies>
 
+	<licenses>
+		<license>
+			<name>LGPL, Version 2.1</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
 	<build>
 	    <sourceDirectory>src/main/scala</sourceDirectory>
     	<testSourceDirectory>src/test/scala</testSourceDirectory>
