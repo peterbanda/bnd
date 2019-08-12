@@ -1,7 +1,0 @@
-Invoking Maven for the goals: [org.apache.maven.plugins:maven-javadoc-plugin:2.8.1:javadoc] with no properties
-
-M2_HOME=/opt/idea-IU-183.5153.38/plugins/maven/lib/maven3
-MAVEN_OPTS=null
-JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre/..
-JAVA_OPTS=null
-
