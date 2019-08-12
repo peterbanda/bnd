@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 public class ListKeyTreeMap<K,V> implements Map<Iterable<K>,V> {
 
