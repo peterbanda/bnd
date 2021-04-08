@@ -176,7 +176,7 @@ public class FileUtil {
 	/**
 	 * Reads the string from the given file.
 	 *  
-	 * @param fileName The name of a file to read bytes from.
+	 * @param filename The name of a file to read bytes from.
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 * @return The content of file as byte array.

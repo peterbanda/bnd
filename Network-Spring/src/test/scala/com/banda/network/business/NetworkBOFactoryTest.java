@@ -14,7 +14,7 @@ import com.bnd.core.util.ConversionUtil;
 import com.bnd.core.util.RandomUtil;
 import com.bnd.function.business.FunctionFactory;
 import com.bnd.function.domain.BooleanFunction;
-import com.bnd.function.domain.BooleanFunction.BooleanFunctionType;
+import com.bnd.function.domain.BooleanFunctionType;
 import com.bnd.function.domain.Expression;
 import com.bnd.network.domain.*;
 import com.bnd.math.domain.rand.UniformDistribution;
@@ -23,7 +23,7 @@ import com.bnd.math.domain.rand.UniformDistribution;
  * @author © Peter Banda
  * @since 2012  
  */
-public class NetworkBOFactoryTest extends NetworkTest {
+public class NetworkBOFactoryTest extends com.bnd.network.business.NetworkTest {
 
 	// Constants
 	private final static boolean SHOW_OUTPUTS = false;

@@ -39,6 +39,7 @@ class StatesWeightsIntegratorTest {
         val b = List(2, 10, 6)
         val x = integrator(a,b)
         println(x)
+        assert(x == 62)
     }
 
     @Test
@@ -49,5 +50,6 @@ class StatesWeightsIntegratorTest {
         val b = List(true, true, false)
         val x = integrator(a,b)
         println(x)
+        assert(x)
     }    
 }

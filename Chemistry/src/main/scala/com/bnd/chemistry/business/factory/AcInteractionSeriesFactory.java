@@ -16,7 +16,7 @@ import com.bnd.function.business.FunctionUtility;
 import com.bnd.function.business.jep.NormalRandomFunction;
 import com.bnd.function.business.jep.RandomFunction;
 import com.bnd.function.domain.BooleanFunction;
-import com.bnd.function.domain.BooleanFunction.BooleanFunctionType;
+import com.bnd.function.domain.BooleanFunctionType;
 import com.bnd.function.domain.Expression;
 import com.bnd.function.domain.Function;
 import com.bnd.function.evaluator.FunctionEvaluator;

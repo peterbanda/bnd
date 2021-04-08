@@ -6,10 +6,6 @@ package com.bnd.function.domain;
  */
 public class BooleanFunction extends AbstractFunction<Boolean, Boolean> {
 
-	public static enum BooleanFunctionType {
-		AND, OR, NOT, XOR, Parity
-	}
-
 	private BooleanFunctionType type;
 
 	public BooleanFunction(BooleanFunctionType type) {

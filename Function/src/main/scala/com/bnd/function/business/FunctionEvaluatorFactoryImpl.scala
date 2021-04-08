@@ -10,7 +10,7 @@ import scala.collection.JavaConversions._
 import com.bnd.core.ListKeyNode
 import com.bnd.core.BooleanArrayListKeyInnerNode
 import com.bnd.core.ScalaBooleanArrayListKeyInnerNode
-import com.bnd.function.domain.BooleanFunction.BooleanFunctionType
+import com.bnd.function.domain.BooleanFunctionType
 import com.bnd.function.domain.Expression
 import com.bnd.function.domain.BooleanFunction
 import com.bnd.function.domain.TransitionTable
