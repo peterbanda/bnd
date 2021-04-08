@@ -7,11 +7,12 @@ import com.bnd.math.domain.evo.EvoGaSetting;
 import com.bnd.math.domain.evo.SelectionType;
 import com.bnd.math.task.EvoRunTask;
 
-class GeneticAlgorithmBOFactoryImpl implements GeneticAlgorithmBOFactory {
+// TODO: changed to public temporary
+public class GeneticAlgorithmBOFactoryImpl implements GeneticAlgorithmBOFactory {
 
 	private ReflectionProvider<? extends Chromosome<?>> chromosomeRF;
 
-	private GeneticAlgorithmBOFactoryImpl(ReflectionProvider<? extends Chromosome<?>> chromosomeRF) {
+	public GeneticAlgorithmBOFactoryImpl(ReflectionProvider<? extends Chromosome<?>> chromosomeRF) {
 		this.chromosomeRF = chromosomeRF;
 	}
 
