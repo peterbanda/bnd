@@ -23,8 +23,8 @@ public class Parallelizer<O> {
 	private int threadsNum;
 	private int inputsPerThread = 1;
 	private Integer runsNum;
-	private transient Semaphore semaphore;
-	private transient CountDownLatch doneSignal;
+	protected transient Semaphore semaphore;
+	protected transient CountDownLatch doneSignal;
 
 	private Parallelizer(RunnableWith<O> runnableUnit, int threadsNum) {
 		this.runnableUnit = runnableUnit;
@@ -110,7 +110,7 @@ public class Parallelizer<O> {
 		}
 	}
 
-	private void launchWorker(Collection<O> actualWorkerInputs) {
+	protected void launchWorker(Collection<O> actualWorkerInputs) {
 		SemaphoreWorker<O> worker = new SemaphoreWorker<O>(doneSignal, runnableUnit, actualWorkerInputs, semaphore);
 		new Thread(worker).start();		
 	}
