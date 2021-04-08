@@ -11,7 +11,7 @@ import com.bnd.chemistry.domain.AcSpecies;
 import com.bnd.chemistry.domain.AcSpeciesSet;
 import com.bnd.core.util.RandomUtil;
 import com.bnd.function.domain.AggregateFunction;
-import com.bnd.function.domain.BooleanFunction.BooleanFunctionType;
+import com.bnd.function.domain.BooleanFunctionType;
 import com.bnd.math.domain.rand.RandomDistribution;
 import com.bnd.math.domain.rand.UniformDistribution;
 

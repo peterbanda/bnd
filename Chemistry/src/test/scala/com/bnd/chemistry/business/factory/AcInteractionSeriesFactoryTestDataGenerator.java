@@ -6,7 +6,7 @@ import java.util.Collection;
 import com.bnd.chemistry.domain.AcConcentrationLevel;
 import com.bnd.chemistry.domain.AcSpeciesSet;
 import com.bnd.chemistry.domain.AcSpeciesType;
-import com.bnd.function.domain.BooleanFunction.BooleanFunctionType;
+import com.bnd.function.domain.BooleanFunctionType;
 import com.bnd.math.domain.rand.RandomDistribution;
 
 
