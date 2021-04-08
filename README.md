@@ -1,4 +1,4 @@
-# BND Libs [![version](https://img.shields.io/badge/version-0.7.1-green.svg)](https://peterbanda.net)
+# BND Libs [![version](https://img.shields.io/badge/version-0.7.2-green.svg)](https://peterbanda.net)
 
 * **Core** - Core utils, converters, and interfaces
 * **Core-Spring** - Spring-ready hooks for the _Core_ project

@@ -15,7 +15,7 @@ import com.google.inject.name.Named
 import com.google.inject.{Provides, Singleton}
 import net.codingwell.scalaguice.ScalaModule
 
-import collection.JavaConverters._
+import collection.JavaConversions.mapAsJavaMap
 
 /**
   * Guice network (Scala) module containing all the necessary components to create and run networks (including reservoirs)
@@ -198,9 +198,9 @@ class NetworkModule extends ScalaModule {
     new MetaNetworkRunnableFactoryImpl(
       functionEvaluatorFactory,
       topologyFactory,
-      map1.asJava,
-      map2.asJava,
-      map3.asJava
+      mapAsJavaMap(map1),
+      mapAsJavaMap(map2),
+      mapAsJavaMap(map3)
     )
   }
 
