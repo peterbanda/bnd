@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bnd-lib</groupId>
-	<artifactId>bnd-function-jep</artifactId>
+	<artifactId>bnd-function-jep_${scala.binary.version}</artifactId>
 	<packaging>jar</packaging>
 	<name>bnd-function-jep</name>
 	<url>https://peterbanda.net</url>
@@ -10,14 +10,14 @@
 	<parent>
 		<groupId>com.bnd-lib</groupId>
 		<artifactId>bnd-parent</artifactId>
-		<version>0.7.0</version>
+		<version>0.7.1</version>
 	</parent>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>com.bnd-lib</groupId>
-			<artifactId>bnd-function</artifactId>
+			<artifactId>bnd-function_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

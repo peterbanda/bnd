@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bnd-lib</groupId>
-	<artifactId>bnd-chemistry</artifactId>
+	<artifactId>bnd-chemistry_${scala.binary.version}</artifactId>
 	<packaging>jar</packaging>
 	<name>bnd-chemistry</name>
 	<url>https://peterbanda.net</url>
@@ -10,32 +10,32 @@
 	<parent>
 		<groupId>com.bnd-lib</groupId>
 		<artifactId>bnd-parent</artifactId>
-		<version>0.7.0</version>
+		<version>0.7.1</version>
 	</parent>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>com.bnd-lib</groupId>
-			<artifactId>bnd-core</artifactId>
+			<artifactId>bnd-core_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.bnd-lib</groupId>
-			<artifactId>bnd-function-jep</artifactId>
+			<artifactId>bnd-function-jep_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.bnd-lib</groupId>
-			<artifactId>bnd-math-spring</artifactId>
+			<artifactId>bnd-math-spring_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.bnd-lib</groupId>
-			<artifactId>bnd-gnuplotter</artifactId>
+			<artifactId>bnd-gnuplotter_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

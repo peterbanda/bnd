@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bnd-lib</groupId>
-	<artifactId>bnd-network-guice</artifactId>
+	<artifactId>bnd-network-guice_${scala.binary.version}</artifactId>
 	<packaging>jar</packaging>
 	<name>bnd-network-guice</name>
 	<url>https://peterbanda.net</url>
@@ -10,20 +10,20 @@
 	<parent>
 		<groupId>com.bnd-lib</groupId>
 		<artifactId>bnd-parent</artifactId>
-		<version>0.7.0</version>
+		<version>0.7.1</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.bnd-lib</groupId>
-			<artifactId>bnd-network</artifactId>
+			<artifactId>bnd-network_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>net.codingwell</groupId>
-			<artifactId>scala-guice_2.11</artifactId>
-			<version>4.0.1</version>
+			<artifactId>scala-guice_${scala.binary.version}</artifactId>
+			<version>4.2.11</version>
 		</dependency>
 	</dependencies>
 

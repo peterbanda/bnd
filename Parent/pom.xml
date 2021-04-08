@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bnd-lib</groupId>
 	<artifactId>bnd-parent</artifactId>
-	<version>0.7.0</version>
+	<version>0.7.1</version>
 	<packaging>pom</packaging>
 	<name>bnd-parent</name>
 	<url>https://peterbanda.net</url>
@@ -26,7 +26,10 @@
 	<properties>
 		<spring.version>3.2.0.RELEASE</spring.version>
 		<java.version>1.8</java.version>
-		<scala.version>2.11.7</scala.version>
+		<scala.version>2.11.12</scala.version>
+		<scala.binary.version>2.11</scala.binary.version>
+<!--		<scala.version>2.12.6</scala.version>-->
+<!--		<scala.binary.version>2.12</scala.binary.version>-->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.resources.sourceEncoding>UTF-8</project.resources.sourceEncoding>
 	</properties>
@@ -110,6 +113,7 @@
 					<args>
 						<arg>-optimise</arg>
 					</args>
+					<scalaVersion>${scala.version}</scalaVersion>
 				</configuration>
 			</plugin>
 
