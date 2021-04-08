@@ -129,14 +129,15 @@ object DynamicsAnalysisResultPlotter extends DynamicsAnalysisResultPlotter(Plott
 class JavaStatsPlotter(private val plotter: Plotter[Unit]) {
 
 	def plotStats(proj : Stats => jl.Double)(
-		stats : jl.Iterable[Stats],
-		title : String
+		stats: jl.Iterable[Stats],
+		title: String
 	) {
 		val xyData = stats.map(s => List(s.getPos, proj(s)))
 		plotter.plotXY(xyData, title)
 	}
 
-	def plotStatsForType(statsType : StatsType) = plotStats(MathUtil.projStats(statsType))(_,_)
+	def plotStatsForType(statsType : StatsType) =
+		plotStats(MathUtil.projStats(statsType))(_: jl.Iterable[Stats], _: String)
 
 	private def toOption(value : jl.Double) : Option[Double] =
 		if (value == null) None else Option(value : Double)

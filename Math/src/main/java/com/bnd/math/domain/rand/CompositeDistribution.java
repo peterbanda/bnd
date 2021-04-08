@@ -6,10 +6,6 @@ package com.bnd.math.domain.rand;
  */
 public class CompositeDistribution<T> extends RandomDistribution<T> {
 
-	static public enum CompositeFunction {
-		PLUS, TIMES
-	}
-
 	private RandomDistribution<T> distribution1;
 	private RandomDistribution<T> distribution2;
 	private CompositeFunction function;

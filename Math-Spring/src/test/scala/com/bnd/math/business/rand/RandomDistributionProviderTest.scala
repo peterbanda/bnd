@@ -14,7 +14,7 @@ import com.bnd.math.domain.rand.DiscreteDistribution
 import com.bnd.math.business.MathTest
 import com.bnd.math.domain.rand.UniformDistribution
 import com.bnd.math.domain.rand.CompositeDistribution
-import com.bnd.math.domain.rand.CompositeDistribution.CompositeFunction
+import com.bnd.math.domain.rand.CompositeFunction
 import com.bnd.math.domain.rand.BooleanDensityUniformDistribution
 
 class RandomDistributionProviderTest extends MathTest {

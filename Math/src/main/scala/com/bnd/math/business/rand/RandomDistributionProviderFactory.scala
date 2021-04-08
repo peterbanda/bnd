@@ -10,7 +10,7 @@ import com.bnd.math.domain.rand.DiscreteDistribution
 import com.bnd.math.domain.rand.UniformDiscreteDistribution
 import com.bnd.math.domain.rand.RepeatedDistribution
 import com.bnd.math.domain.rand.CompositeDistribution
-import com.bnd.math.domain.rand.CompositeDistribution.CompositeFunction
+import com.bnd.math.domain.rand.CompositeFunction
 import com.bnd.core.NumericConversions
 import com.bnd.core.ClassUtil
 import com.bnd.core.BndRuntimeException
