@@ -15,7 +15,7 @@ import com.bnd.math.domain.evo.BitMutationType;
 import com.bnd.math.domain.evo.CompositeChromosome;
 
 
-public abstract class EvoCompositeChromManipulatorBO<H extends CompositeChromosome<C, E>, C, E> extends EvoChromManipulatorBO<H, C> {
+public abstract class EvoCompositeChromManipulatorBO<H extends CompositeChromosome<C, E>, C, E> extends AbstractEvoChromManipulatorBO<H, C> {
 
 	protected final Class<E>[] elementClasses;
 	protected final ValueBound<E>[] codeElementValueBounds; 
