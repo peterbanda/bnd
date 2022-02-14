@@ -5,26 +5,25 @@
 	<artifactId>bnd-math_${scala.binary.version}</artifactId>
 	<packaging>jar</packaging>
 	<name>bnd-math</name>
-	<version>0.7.2.1</version>
 	<url>https://peterbanda.net</url>
 
 	<parent>
 		<groupId>com.bnd-lib</groupId>
 		<artifactId>bnd-parent</artifactId>
-		<version>0.7.2</version>
+		<version>0.7.3</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.bnd-lib</groupId>
 			<artifactId>bnd-core_${scala.binary.version}</artifactId>
-			<version>0.7.2</version>
+			<version>0.7.3</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.bnd-lib</groupId>
 			<artifactId>bnd-function_${scala.binary.version}</artifactId>
-			<version>0.7.2</version>
+			<version>0.7.3</version>
 		</dependency>
 
 		<dependency>
