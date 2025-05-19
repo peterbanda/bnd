@@ -14,7 +14,7 @@ import com.bnd.core.runnable.StateAccessible
 import com.bnd.math.domain.Stats
 import com.bnd.core.runnable.TimeRunnable
 
-class FullSingleRunDynamicsAnalysis[T: Integral: DoubleConvertible: Manifest](val spec: FullDynamicsAnalysisSpec[T]) {
+class FullSingleRunDynamicsAnalysis[T: Fractional: DoubleConvertible: Manifest](val spec: FullDynamicsAnalysisSpec[T]) {
 
     val basicAnalysis = new SingleRunBasicAnalysisSuite[T](
         spec.timeStepToFilter, spec.fixedPointDetectionPrecision, spec.stationaryPointDetectionPrecision, spec.lowerBound, spec.upperBound)
@@ -80,7 +80,7 @@ class FullResults[T](
 object FullSingleRunDynamicsAnalysisFactory {
 
     // TODO: this is supposed to be provided automatically
-    implicit val doubleAsIntegral = DoubleAsIfIntegral
+    implicit val doubleAsFractional: Fractional[Double] = DoubleIsFractional
     val euclideanVectorSpace = new EuclideanVectorSpace[Double]
 
     def createDoubleEuclideanInstance(

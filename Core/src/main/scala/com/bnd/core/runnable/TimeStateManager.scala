@@ -9,12 +9,14 @@ import com.bnd.core.runnable.SeqIndexAccessible.Implicits._
 import com.bnd.core.CollectionElementsConversions._
 import com.bnd.core.DoubleConvertible.Implicits.minusAsDouble
 
-import scala.collection.JavaConversions._
 import scala.collection.{Map, mutable}
 import scala.collection.mutable.{ListBuffer, Publisher, Map => MMap}
 import scala.math.BigDecimal
 import scala.math.BigDecimal._
 import scala.math.Numeric.Implicits._
+import scala.jdk.CollectionConverters._
+import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
+import scala.reflect.ClassManifest
 
 /**
   * @author © Peter Banda
@@ -455,7 +457,8 @@ object ContinuousCrossModuleTransport {
     lowerValue: T,
     lowerBound: Option[T])(
     a: T,
-    b: T)(
+    b: T
+  )(
     implicit d: DoubleConvertible[T]
   ) = {
     val value = d.toDouble(a) + d.toDouble(b)
@@ -525,15 +528,15 @@ private abstract class ContainerTimeStateManager[T, C, M](
 
   // state functions
 
-  override def getStates = states
+  override def getStates = states.asJava
 
   override def setStates(states: ju.List[T]) {
     var remainingStates = states
     (runnables, stateCounts).zipped.map {
       (runnable, stateCount) =>
         val pair = remainingStates.splitAt(stateCount)
-        runnable.setStates(pair._1)
-        remainingStates = pair._2
+        runnable.setStates(pair._1.toList.asJava)
+        remainingStates = pair._2.toList.asJava
     }
   }
 

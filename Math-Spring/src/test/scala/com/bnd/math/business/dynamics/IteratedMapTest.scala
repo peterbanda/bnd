@@ -1,20 +1,14 @@
 package com.bnd.math.business.dynamics
 
-import com.bnd.core.runnable.StateAccessible
 import com.bnd.math.business.dynamics.IteratedMap._
 import com.bnd.plotter.{Plotter, SeriesPlotSetting}
-import org.junit.Test
-import com.bnd.core.CollectionElementsConversions.javaListMatrixToScalaSeqMatrix
-import com.bnd.core.runnable.TimeRunnable
 import com.bnd.core.util.FileUtil
-
-import scala.collection.JavaConversions.seqAsJavaList
-import scala.math.Numeric.DoubleAsIfIntegral
+import com.bnd.core.runnable.{ TimeRunnable, StateAccessible }
+import org.junit.Test
+import scala.jdk.CollectionConverters._
 
 class IteratedMapTest {
 
-  // TODO: this is supposed to be provided automatically
-  implicit val doubleAsIntegral = DoubleAsIfIntegral
   private val plotter = Plotter("svg")
 
   private val fileUtil = FileUtil.getInstance()
@@ -24,7 +18,7 @@ class IteratedMapTest {
   def testTrigonometric2dMap {
     val map = createTrigonometric2DMap(1,3)
     val initialStates = Seq(0.27, 1.2)
-    map.setStates(initialStates)
+    map.setStates(initialStates.asJava)
 
     val history = collectStates(map, 1000)
     val output = plotter.plotXY(history, "Trigonometric 2D Map" )
@@ -35,7 +29,7 @@ class IteratedMapTest {
   @Test
   def testLogisticMap {
     val map = createLogisticMap(4)
-    map.setStates(Seq(0.1))
+    map.setStates(Seq(0.1).asJava)
 
     val history = collectStates(map, 500)
 
@@ -50,7 +44,7 @@ class IteratedMapTest {
   @Test
   def testLogisticMap2 {
     val map = createLogisticMap(1.5)
-    map.setStates(Seq(0.2))
+    map.setStates(Seq(0.2).asJava)
 
     val history = collectStates(map, 500)
 
@@ -65,7 +59,7 @@ class IteratedMapTest {
   @Test
   def testLorentzSystem {
     val system = createLorenzSystem(18, 10, 8/3, 0.0001)
-    system.setStates(Seq(20D, -19D, 40D))
+    system.setStates(Seq(20D, -19D, 40D).asJava)
 
     val history = collectStates(system, 100000)
 
@@ -77,7 +71,7 @@ class IteratedMapTest {
   @Test
   def testLorentzSystem2 {
     val system = createLorenzSystem(18, 10, 8/3, 0.0001)
-    system.setStates(Seq(20D, -19D, 40D))
+    system.setStates(Seq(20D, -19D, 40D).asJava)
 
     val history = collectStates(system, 100000)
 
@@ -97,7 +91,7 @@ class IteratedMapTest {
       if (i > 0) {
         timeRunnable.runFor(1D)
       }
-      timeRunnable.getStates
+      timeRunnable.getStates.asScala
     }
   }
 }

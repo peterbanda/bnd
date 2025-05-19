@@ -20,12 +20,14 @@ class NonlinearityLastProcessor[T : DoubleConvertible](
     	    val regression = new SimpleRegression()
     	    var min = Double.PositiveInfinity
     	    var max = Double.NegativeInfinity
+
     	    for ((value,index) <- stateHistory.zipWithIndex) {
     	        min = Math.min(min, value)
     	        max = Math.max(max, value)
     	        if (value >= upperBound) throw new UnboundValueException(value.toString() + " violated upper bound " + upperBound) 
     	    	regression.addData(index * timeStepLength, value : Double)
     	    }
+
     	    val rmsd = Math.sqrt(regression.getSumSquaredErrors() / stateHistory.size)
     	    val range = if (min.equals(max)) 1 else max - min
     	    if (normalized) rmsd / range else rmsd

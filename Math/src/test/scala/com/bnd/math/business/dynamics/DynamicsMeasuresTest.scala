@@ -1,10 +1,9 @@
 package com.bnd.math.business.dynamics
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.collection._
 import scala.math._
 import scala.math.Numeric._
-import scala.Numeric.DoubleAsIfIntegral
 
 import org.junit.Test
 

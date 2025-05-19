@@ -1,14 +1,11 @@
 package com.bnd.math.business.rand
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import java.{lang => jl}
 import scala.collection._
 import scala.math._
 import scala.math.Integral._
-import scala.Numeric.DoubleAsIfIntegral
-import com.bnd.core.DoubleConvertible.Implicits._
 import org.junit.Test
-import com.bnd.core.CollectionElementsConversions._
 import com.bnd.math.domain.rand.RandomDistribution
 import com.bnd.math.domain.rand.DiscreteDistribution
 import com.bnd.math.business.MathTest

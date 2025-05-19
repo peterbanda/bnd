@@ -1,7 +1,7 @@
 package com.bnd.math.business.rand
 
 import com.bnd.math.domain.rand.BooleanDensityUniformDistribution
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 object RandomDistributionTest extends App {
 
@@ -14,7 +14,7 @@ object RandomDistributionTest extends App {
   for (i <- 0 to repetitions) {
     var count = 0
 
-    rdp.nextList(size).toSeq.zipWithIndex.map { case (value, index) =>
+    rdp.nextList(size).asScala.zipWithIndex.map { case (value, index) =>
       if (value) {
         count += 1
         indexOccurences(index) += 1

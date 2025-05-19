@@ -3,7 +3,7 @@ package com.bnd.math.business.dynamics
 import java.util.Date
 
 import scala.Array._
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.math.Integral.Implicits._
 import scala.math.Numeric._
 import scala.util.Random
@@ -22,10 +22,10 @@ import java.{util => ju}
 
 import com.bnd.core.runnable.TimeRunnable
 
-class StatsSingleRunDynamicsAnalysis[T: Integral: DoubleConvertible: Manifest](val spec: StatsDynamicsAnalysisSpec[T]) {
+class StatsSingleRunDynamicsAnalysis[T: Fractional: DoubleConvertible: Manifest](val spec: StatsDynamicsAnalysisSpec[T]) {
 
     val fullAnalysis = new FullSingleRunDynamicsAnalysis[T](spec.fullSpec)
-    val num = implicitly[Integral[T]]
+    val num = implicitly[Fractional[T]]
     def reduceList[T] = take[T](spec.fullSpec.timeStepToFilter)_
 
     def run(runnable: TimeRunnable with StateAccessible[T], initialState: Seq[T]): StatsResults = {
@@ -36,7 +36,9 @@ class StatsSingleRunDynamicsAnalysis[T: Integral: DoubleConvertible: Manifest](v
 
         val derridaStats = createDerridaStats(fullResults.derridaResults)
 
-        val meanFixedPoints = reduceList(fullResults.fixedPointDetectedFlags.transpose).map(calcMean(_))
+        val meanFixedPoints = reduceList(
+					fullResults.fixedPointDetectedFlags.transpose
+				).map(calcMean(_))
 
         new StatsResults(
         	createStats(fullResults.spatialCorrelationMatrix, true),
@@ -108,7 +110,7 @@ class StatsResults(
 object StatsSingleRunDynamicsAnalysisFactory {
 
     // TODO: this is supposed to be provided automatically
-    implicit val doubleAsIntegral = DoubleAsIfIntegral
+//    implicit val doubleAsIntegral = DoubleAsIfIntegral
     val euclideanVectorSpace = new EuclideanVectorSpace[Double]
 
     def createDoubleEuclideanInstance(
@@ -156,18 +158,23 @@ object StatsSingleRunDynamicsAnalysisFactory {
 
 class JavaDoubleStatsSingleRunDynamicsAnalysis(spec : SingleRunAnalysisSpec) {
 
-	implicit def toStatsSeq(stats : Iterable[Stats]) = new StatsSequence {
-		setStats(stats)
+	implicit def toStatsSeq(stats : Iterable[Stats]) =
+		new StatsSequence {
+			setStats(stats.asJavaCollection)
    	}
 
     val proxiedAnalysis = StatsSingleRunDynamicsAnalysisFactory.createJavaDoubleEuclideanInstance(spec)
+
+	implicit class IterableImplicits[T](x: Iterable[T]) {
+		def toJavaList[O](convert: T => O) = x.toList.map(convert).asJava
+	}
 
 	def run(
 		runnable: TimeRunnable with StateAccessible[jl.Double],
 		initialState: ju.List[jl.Double]
 	): SingleRunAnalysisResult = {
 		val scalaDoubleRunnable = TimeRunnableDoubleAdapter(runnable)
-		val seq = initialState : Seq[jl.Double]
+		val seq = initialState.asScala.toSeq : Seq[jl.Double]
 		val result = proxiedAnalysis.run(scalaDoubleRunnable, seq)
 
 		new SingleRunAnalysisResult {
@@ -175,7 +182,7 @@ class JavaDoubleStatsSingleRunDynamicsAnalysis(spec : SingleRunAnalysisSpec) {
 		    setInitialState(initialState)
 			setSpatialCorrelations(result.spatialCorrelations)
 			setTimeCorrelations(result.timeCorrelations)
-			setNeighborTimeCorrelations(result.neighborTimeCorrelations.toSeq : Seq[jl.Double])
+			setNeighborTimeCorrelations(result.neighborTimeCorrelations.toJavaList(new jl.Double(_)))
 			setSpatialStationaryPointsPerTime(result.spatialStationaryPointsPerTime)
 			setTimeStationaryPointsPerTime(result.timeStationaryPointsPerTime)
 			setSpatialCumulativeDiffPerTime(result.spatialCumulativeDiffPerTime)
@@ -183,10 +190,10 @@ class JavaDoubleStatsSingleRunDynamicsAnalysis(spec : SingleRunAnalysisSpec) {
 			setSpatialNonlinearityErrors(result.spatialNonlinearityErrors)
 			setTimeNonlinearityErrors(result.timeNonlinearityErrors)
 
-			setFinalFixedPointsDetected(result.finalFixedPointsDetected.toSeq : Seq[jl.Boolean])
-			setMeanFixedPointsDetected(result.meanFixedPointsDetected.toSeq : Seq[jl.Double])
-			setUnboundValuesDetected(result.unboundValuesDetected.toSeq : Seq[jl.Boolean])
-			setFinalLyapunovExponents(result.finalLyapunovExponents.toSeq : Seq[jl.Double])
+			setFinalFixedPointsDetected(result.finalFixedPointsDetected.toJavaList(new jl.Boolean(_)))
+			setMeanFixedPointsDetected(result.meanFixedPointsDetected.toJavaList(new jl.Double(_)))
+			setUnboundValuesDetected(result.unboundValuesDetected.toJavaList(new jl.Boolean(_)))
+			setFinalLyapunovExponents(result.finalLyapunovExponents.toJavaList(new jl.Double(_)))
 			setDerridaResults(result.derridaResults)
 		}
 	}
@@ -196,7 +203,7 @@ class JavaDoubleStatsSingleRunDynamicsAnalysis(spec : SingleRunAnalysisSpec) {
 		initialState: ju.List[jl.Double]
 	): StatsSequence = {
 		val scalaDoubleRunnable = TimeRunnableDoubleAdapter(runnable)
-		val seq = initialState : Seq[jl.Double]
+		val seq = initialState.asScala.toSeq : Seq[jl.Double]
 		proxiedAnalysis.runDerridaOnly(scalaDoubleRunnable, seq)
 	}
 }

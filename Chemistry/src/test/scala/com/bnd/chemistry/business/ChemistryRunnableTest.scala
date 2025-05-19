@@ -2,38 +2,26 @@ package com.bnd.chemistry.business
 
 import java.{lang => jl}
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.util.Random
 import org.junit.Assert._
 import org.junit.BeforeClass
 import org.junit.Test
 import com.bnd.chemistry.domain._
-import com.bnd.core.CollectionElementsConversions._
-import com.bnd.core.DoubleConvertible
-import com.bnd.core.DoubleConvertible.JavaDoubleAsDoubleConvertible
-import com.bnd.core.runnable.DistanceFixedPointDetector
-import com.bnd.core.runnable.FixedPointDetector
-import com.bnd.core.runnable.TimeStateManager
 import com.bnd.plotter.Plotter
 import com.bnd.function.domain.ODESolverType
 import com.bnd.math.domain.rand.RandomDistribution
 import com.bnd.chemistry.business.ChemistryTestDataGenerator._
+import com.bnd.core.runnable._
+import com.bnd.core.DoubleConvertible
+import com.bnd.core.runnable.SeqIndexAccessible.ArraySeqIndexAccessible
 import java.{lang => jl}
-
-import com.bnd.core.runnable.StateAccessible
 
 import scala.collection.mutable.Publisher
 import ChemistryRunnableTest._
 import org.junit.FixMethodOrder
 import org.junit.runners.MethodSorters
-import com.bnd.core.runnable.StateCollector
-import com.bnd.core.runnable.StateEvent
-import com.bnd.core.runnable.ComponentStateCollector
-import com.bnd.core.runnable.SeqIndexAccessible._
-import com.bnd.core.runnable.SeqIndexAccessible.Implicits._
-import com.bnd.core.runnable.SeqIndexAccessible
 import com.bnd.plotter.{Plotter, SeriesPlotSetting}
-import com.bnd.core.runnable.{TimeRunnable, TimeStateManager}
 
 object ChemistryRunnableTest {
 
@@ -64,7 +52,7 @@ object ChemistryRunnableTest {
   val plotter = Plotter.apply
   val acUtil = ArtificialChemistryUtil.getInstance
 
-  var initialStates: Iterable[Seq[Double]] = _
+  var initialStates: Iterable[Seq[jl.Double]] = _
   var compartments: Iterable[AcCompartment] = _
   var fixedPointDetector: FixedPointDetector[jl.Double] = _
 
@@ -110,15 +98,18 @@ class ChemistryRunnableTest extends ScalaChemistryTest {
   @Test
   def test8Correctness = (compartments, initialStates).zipped.foreach(testCorrectness)
 
-  def testCorrectness(compartment: AcCompartment, is: Seq[Double]) {
-    val initialState = is: Seq[jl.Double]
-
+  def testCorrectness(
+    compartment: AcCompartment,
+    initialState: Seq[jl.Double]
+  ) {
     val chemistryProducer = FlatChemistryProducer.applyArray(compartment, simConfig)
     val chemistryNew = TimeStateManager.stateUpdateableInstance(chemistryProducer)
-    chemistryNew.setStates(initialState)
+    chemistryNew.setStates(initialState.asJava)
+
     val timeStateCollector = new StateCollector[jl.Double, Array]
     chemistryNew.subscribe(timeStateCollector)
     chemistryNew.runFor(time)
+
     val chemistryNewStates = timeStateCollector.collected
 
     //    	val chemistryOldStates = getStatesOld(compartment, ac.getSimulationConfig, initialState)
@@ -148,7 +139,7 @@ class ChemistryRunnableTest extends ScalaChemistryTest {
     if (collectStates || displayPlot) {
       system.subscribe(timeStateCollector)
     }
-    system.setStates(initialState)
+    system.setStates(initialState.asJava)
     system.runFor(time)
     if (displayPlot) {
       val plotSetting = new SeriesPlotSetting()
@@ -156,7 +147,14 @@ class ChemistryRunnableTest extends ScalaChemistryTest {
           .setTransposed(true)
           .setXAxis(timeStateCollector.collected.map(_._1.toDouble))
 
-      plotter.plotSeries(timeStateCollector.collected.map(_._2.iterator.toIterable), plotSetting)
+      plotter.plotSeries(
+        timeStateCollector.collected.map(ts => {
+          val seqAccess = implicitly[SeqIndexAccessible[S]]
+          val length = seqAccess.size(ts._2)
+          (0 until length).map(i => seqAccess.apply(ts._2, i))
+        }),
+        plotSetting
+      )
     }
   }
 
@@ -181,7 +179,7 @@ class ChemistryRunnableTest extends ScalaChemistryTest {
     } else List.empty[(AcCompartment, StateCollector[jl.Double, Array])]
 
     val initialState = for (i <- 1 to containerChemistry.getStates.size) yield Random.nextDouble: jl.Double
-    containerChemistry.setStates(initialState)
+    containerChemistry.setStates(initialState.asJava)
 
     containerChemistry.runFor(time)
   }

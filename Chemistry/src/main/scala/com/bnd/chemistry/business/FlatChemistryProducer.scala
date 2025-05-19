@@ -2,14 +2,16 @@ package com.bnd.chemistry.business
 
 import java.{lang => jl, util => ju}
 
-import scala.collection.JavaConversions._
-import com.bnd.core.CollectionElementsConversions._
+import scala.jdk.CollectionConverters._
 import com.bnd.chemistry.BndChemistryException
 import com.bnd.chemistry.domain.AcParameter
 import com.bnd.chemistry.domain.AcSpecies
 import com.bnd.chemistry.domain.AcVariable
 import com.bnd.chemistry.business.DoubleFunctionEvaluatorWrapper
 import java.util.Arrays
+import com.bnd.core.runnable.{StateProducer, StateUpdateable}
+import com.bnd.core.dynamics.ODESolver
+import com.bnd.core.domain.{ DomainObject }
 
 import com.bnd.chemistry.domain.AcCompartment
 import com.bnd.chemistry.domain.AcSimulationConfig
@@ -26,17 +28,11 @@ import com.bnd.chemistry.business.reactionode.AcReactionODESolverFactory
 import java.util.Collections
 
 import com.bnd.chemistry.domain.AcVariable.AcVariableIndexComparator
-import com.bnd.core.runnable.StateUpdateable
 import com.bnd.chemistry.domain.AcChannelDirection
-import com.bnd.core.domain.DomainObject.DomainObjectKeyComparator
-import com.bnd.core.domain.DomainObject
-import com.bnd.core.domain.DomainObject
-import com.bnd.core.dynamics.ODESolver
-import com.bnd.core.runnable.{StateProducer, StateUpdateable}
 
 abstract class FlatChemistryProducer[S[X]](spec : FlatChemistryProducerSpec) extends StateProducer[jl.Double, AcVariable[_], S] {
 
-    val nonConstantSpeciesConvertedIndeces : Iterable[Int] = spec.nonConstantSpeciesConvertedIndecesSet.map(x => x : Int)
+    val nonConstantSpeciesConvertedIndeces : Iterable[Int] = spec.nonConstantSpeciesConvertedIndecesSet.asScala.map(x => x : Int)
 
     // TODO: check if constant time step of ODE solver
     override def isConstantTimeStep = false
@@ -44,8 +40,8 @@ abstract class FlatChemistryProducer[S[X]](spec : FlatChemistryProducerSpec) ext
     override def listInputComponentsInOrder = {
 		val all = new ju.ArrayList[AcVariable[_]]
 		all.addAll(spec.speciesInEvaluationOrder)
-		for (wrappedParameter <- spec.wrappedParametersInEvaluationOrder) all.add(wrappedParameter.getFunctionHolder())
-		all
+		spec.wrappedParametersInEvaluationOrder.forEach(wrappedParameter => all.add(wrappedParameter.getFunctionHolder()))
+		all.asScala.toList
 	}
 
 	override def listOutputComponentsInOrder = listInputComponentsInOrder
@@ -54,10 +50,11 @@ abstract class FlatChemistryProducer[S[X]](spec : FlatChemistryProducerSpec) ext
 
     
 	protected def updateByParams(magnitudes : Array[jl.Double]) {
-		for (wrappedParameter <- spec.wrappedParametersInEvaluationOrder)
+		spec.wrappedParametersInEvaluationOrder.forEach(wrappedParameter =>
 			magnitudes.update(
 			        getConvertedMagnitudeIndex(wrappedParameter.getFunctionHolder()),
 			        wrappedParameter.getFunctionEvaluator().evaluate(magnitudes))
+		)
 	}
 
 	protected def addDiffs(magnitudes : Array[jl.Double], diffs : Array[jl.Double]) {
@@ -90,7 +87,12 @@ private class FlatChemistryProducerSpec(
 final private class ListFlatChemistryProducer(spec : FlatChemistryProducerSpec) extends FlatChemistryProducer[ju.List](spec) {
 
 	override def nextState(currentStates : ju.List[jl.Double], timeStep : Option[Double]) : ju.List[jl.Double] = {
-		val magnitudes : Array[jl.Double] = currentStates
+		// Convert List to Array
+		val size = currentStates.size()
+		val magnitudes = new Array[jl.Double](size)
+		for (i <- 0 until size) {
+		    magnitudes(i) = currentStates.get(i)
+		}
 
 		// update by parameters
 		updateByParams(magnitudes)
@@ -175,14 +177,19 @@ object FlatChemistryProducer {
 	) : SP = {
 	    // init reactions
 		val reactionSet = replicator.cloneReactionSetWithReactionsAndGroups(compartment.getReactionSet())
-		val reactions = reactionSet.getReactions.filter(_.isEnabled)
+		val reactions: java.util.List[AcReaction] = reactionSet.getReactions.asScala.filter(_.isEnabled).asJava
 		reactions.addAll(createReverseReactionsAsForward(reactions, replicator))
 		sortReactionsByIdAndSetIndex(reactions)
+
 		if (reactions.isEmpty) throw new BndChemistryException("No enabled reactions for AC run.")
 
 	    // init species & parameters
 	    val speciesSet = compartment.getSpeciesSet
-		val species = if (explicitSpecies.isDefined) explicitSpecies.get : ju.Collection[AcSpecies] else speciesSet.getOwnAndInheritedVariables
+		val species = if (explicitSpecies.isDefined) {
+                        val list = new ju.ArrayList[AcSpecies]()
+                        explicitSpecies.get.foreach(list.add(_))
+                        list
+                      } else speciesSet.getOwnAndInheritedVariables
 		val orderedSpecies = new ju.ArrayList[AcSpecies](species)
 		Collections.sort(orderedSpecies, new AcVariableIndexComparator[AcSpecies])
 		val speciesCount = species.size
@@ -195,9 +202,9 @@ object FlatChemistryProducer {
 
 		val magnitudeIndexConversionMap = createMagnitudeIndexConversionMap(species, params)
 		val wrappedParametersInEvaluationOrder = createWrappedParametersInEvaluationOrder(params, speciesCount, magnitudeIndexConversionMap)
-		val nonConstantSpeciesConvertedIndeces : ju.Set[jl.Integer] = if (immutableSpecies.isDefined) 
+		val nonConstantSpeciesConvertedIndeces : ju.Set[jl.Integer] = if (immutableSpecies.isDefined) {
 		    createMutableSpeciesConvertedIndeces(species, immutableSpecies.get, magnitudeIndexConversionMap)
-		else
+		} else
 		    new ju.HashSet[jl.Integer]
 
 		val reactionODESolver = AcReactionODESolverFactory.createInstance(
@@ -229,27 +236,27 @@ object FlatChemistryProducer {
 	}
 
 	private def createMagnitudeIndexConversionMap(
-	     species : ju.Collection[AcSpecies],
-	     parameters : ju.Collection[AcParameter]
+		species : ju.Collection[AcSpecies],
+	  parameters : ju.Collection[AcParameter]
 	) : ju.Map[jl.Integer, jl.Integer] = {
 		 val magnitudeIndexConversionMap = new ju.HashMap[jl.Integer, jl.Integer]
 		 // First sort species
-		 val speciesSorted = species.toList.sortBy(_.getVariableIndex)
+		 val speciesSorted = species.asScala.toList.sortBy(_.getVariableIndex)
 		 // Then parameters
-		 val paramsSorted = parameters.toList.sortBy(_.getVariableIndex)
+		 val paramsSorted = parameters.asScala.toList.sortBy(_.getVariableIndex)
 
-		 val indexConversionMap = (speciesSorted ++ paramsSorted).zipWithIndex.map{ case(s,i) => (s.getVariableIndex, i : jl.Integer)}.toMap
-		 indexConversionMap
+		 val indexConversionMap = (speciesSorted ++ paramsSorted).zipWithIndex.map { case (s,i) => (s.getVariableIndex, i : jl.Integer)}.toMap
+		 indexConversionMap.asJava
 	}
 
 	// TODO remove and rewrite in Scala
 	private def sortReactionsByIdAndSetIndex(reactions : ju.List[AcReaction]) {
-		Collections.sort(reactions.asInstanceOf[ju.List[DomainObject[jl.Long]]], new DomainObjectKeyComparator[jl.Long])
+		Collections.sort(reactions.asInstanceOf[ju.List[DomainObject[jl.Long]]], new DomainObject.DomainObjectKeyComparator[jl.Long])
 		var index = 0
-		for (reaction <- reactions) {
+		reactions.forEach(reaction => {
 			reaction.setIndex(index);
-			index += 1;
-		}
+			index += 1
+		});
 	}
 
 	private def copyParameterSet(originalParameterSet : AcParameterSet) = {
@@ -263,7 +270,7 @@ object FlatChemistryProducer {
 		speciesSet.setSpeciesGroupMap(originalSpeciesSet.getSpeciesGroupMap)
 
 		val parameterSet = new AcParameterSet
-		for (originalParameter <- originalParameterSet.getVariables) {
+		for (originalParameter <- originalParameterSet.getVariables.asScala) {
 			val parameter = new AcParameter
 			parameter.setId(originalParameter.getId)
 			parameter.setVariableIndex(originalParameter.getVariableIndex)
@@ -281,7 +288,7 @@ object FlatChemistryProducer {
 		reactions : ju.Collection[AcReaction] 
 	) {
 		val virtualSumExpressionMultiplicityMap = new ju.HashMap[String, jl.Integer] 
-		for (reaction <- reactions)
+		for (reaction <- reactions.asScala)
 			// TODO: What about reverse reactions
 			if (reaction.getForwardRateFunction == null) {
 			  	if (reaction.getCollectiveCatalysisType() == AcCollectiveSpeciesReactionAssociationType.OR) {
@@ -298,7 +305,7 @@ object FlatChemistryProducer {
 			  	}
 			}
 
-		for (virtualSumExpressioWithMultiplicity <- virtualSumExpressionMultiplicityMap.entrySet)
+		for (virtualSumExpressioWithMultiplicity <- virtualSumExpressionMultiplicityMap.entrySet.asScala)
 			if (virtualSumExpressioWithMultiplicity.getValue > 1) {
 				// makes sense to introduce parameter since the expression is used at > 1 places
 				val virtualParameter = new AcParameter
@@ -314,7 +321,7 @@ object FlatChemistryProducer {
 		replicator : AcReplicator 
 	) = {
 		val reverseReactions = new ju.ArrayList[AcReaction]
-		for (reaction <- reactions)
+		reactions.forEach(reaction => {
 			if (reaction.hasReverseRateConstants || reaction.hasReverseRateFunction) {
 				val reverseReaction = replicator.cloneReaction(reaction)
 				reverseReactions.add(reverseReaction)
@@ -332,6 +339,7 @@ object FlatChemistryProducer {
 				reaction.getReactionSet.addReaction(reverseReaction)
 				// TODO: what about catalysts and inhibitors		
 			}
+		});
 
 		reverseReactions
 	}
@@ -354,23 +362,23 @@ object FlatChemistryProducer {
 		magnitudeIndexConversionMap : ju.Map[jl.Integer, jl.Integer] 
 	) : ju.List[DoubleFunctionEvaluatorWrapper[AcParameter]] = {
 		val parameterIndeces = new ju.HashSet[jl.Integer]
-		for (parameter <- parameters) parameterIndeces.add(parameter.getVariableIndex)
+		for (parameter <- parameters.asScala) parameterIndeces.add(parameter.getVariableIndex)
 		val wrappedParametersInEvaluatorOrder = new ju.ArrayList[DoubleFunctionEvaluatorWrapper[AcParameter]]
 //		ac.getSkinCompartment().sortParametersByIdAndSetIndex()
 		val unresolvedParamDependenciesMap = new ju.HashMap[AcParameter, ju.Set[jl.Integer]]
 
-		for (parameter <- parameters) {
+		for (parameter <- parameters.asScala) {
 			val referencedVariableIndeces = parameter.getEvolFunction.getReferencedVariableIndeces
 			val referencedParameters = new ju.HashSet[jl.Integer]
 			unresolvedParamDependenciesMap.put(parameter, referencedParameters)
-			for (referencedVariableIndex <- referencedVariableIndeces)
+			for (referencedVariableIndex <- referencedVariableIndeces.asScala)
 				if (parameterIndeces.contains(referencedVariableIndex)) referencedParameters.add(referencedVariableIndex)
 		}
 
 		while (!unresolvedParamDependenciesMap.isEmpty) {
 			var parameterWithoutDependecies : AcParameter = null
 			breakable {
-			    for (parameter <- unresolvedParamDependenciesMap.keySet) {
+			    for (parameter <- unresolvedParamDependenciesMap.keySet.asScala) {
 			    	val unresolvedParamDependencies = unresolvedParamDependenciesMap.get(parameter)
 			    	if (unresolvedParamDependencies.isEmpty()) {
 			    		parameterWithoutDependecies = parameter
@@ -383,7 +391,7 @@ object FlatChemistryProducer {
 			}
 			wrappedParametersInEvaluatorOrder.add(new DoubleFunctionEvaluatorWrapper[AcParameter](parameterWithoutDependecies, magnitudeIndexConversionMap))
 			unresolvedParamDependenciesMap.remove(parameterWithoutDependecies)
-			for (dependecies <- unresolvedParamDependenciesMap.values.iterator)
+			for (dependecies <- unresolvedParamDependenciesMap.values.iterator.asScala)
 				dependecies.remove(parameterWithoutDependecies.getVariableIndex)
 
 		}

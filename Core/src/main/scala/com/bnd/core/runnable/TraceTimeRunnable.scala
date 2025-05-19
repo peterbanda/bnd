@@ -1,13 +1,12 @@
 package com.bnd.core.runnable
 
-import java.{lang => jl, util => ju}
-
 import com.bnd.core.domain.{ComponentHistory, ComponentRunTrace}
 import com.bnd.core.runnable.SeqIndexAccessible.Implicits._
 
-import scala.collection.JavaConversions._
+import java.{lang => jl, util => ju}
 import scala.collection.mutable
 import scala.collection.mutable.Publisher
+import scala.jdk.CollectionConverters._
 
 /**
 	* @author © Peter Banda
@@ -28,11 +27,15 @@ private class TraceTimeRunnable[T : Manifest, C, S[X] : SeqIndexAccessible](
     	runFor(0 : BigDecimal)
     	val runTrace = new ComponentRunTrace[T, C]
     	runTrace.runTime(currentTime.doubleValue)
+
     	if (!updatedStateCollector.collected.isEmpty) {
-    		runTrace.timeSteps(updatedStateCollector.collected.map(_._1.doubleValue : jl.Double))
+    		runTrace.timeSteps(updatedStateCollector.collected.map(_._1.doubleValue : jl.Double).asJava)
     		val components = updatedStateCollector.components
     		val histories = updatedStateCollector.collected.view.map(_._2.toSeq).transpose
-    		runTrace.componentHistories((components, histories).zipped.map{createComponentHistory(_, _)}.toList)
+    		runTrace.componentHistories(
+					(components, histories).zipped.map { case (a, b) =>
+						createComponentHistory(a, b.toList.asJava)
+					}.toList.asJava)
     	}
     	if (!alteredStateCollector.collected.isEmpty) {
     	    // TODO

@@ -1,9 +1,9 @@
 package com.bnd.core.runnable
 
 import java.{util => ju}
-import scala.collection.IterableLike
-import scala.collection.JavaConversions.asScalaIterator
-import scala.collection.JavaConversions.asScalaBuffer
+import scala.jdk.CollectionConverters._
+//import scala.collection.JavaConversions.asScalaIterator
+//import scala.collection.JavaConversions.asScalaBuffer
 import java.util.Collections
 import scala.collection.mutable.WrappedArray
 
@@ -29,8 +29,8 @@ object SeqIndexAccessible {
 
 		override def apply[A](seq : ju.List[A], index : Int)  = seq.get(index)
 		override def copy[A](seq : ju.List[A]) : ju.List[A] = new ju.ArrayList[A](seq)
-		override def iterator[A](seq : ju.List[A]) = asScalaIterator(seq.iterator)
-		override def toSeq[A](seq : ju.List[A]) = asScalaBuffer(seq)
+		override def iterator[A](seq : ju.List[A]) = seq.iterator.asScala
+		override def toSeq[A](seq : ju.List[A]) = seq.asScala.toSeq
 		override def size[A](seq : ju.List[A]) = seq.size
 
 		//    	override def fill[A : Manifest](num : Int, elem : A) = new ju.ArrayList[A](Collections.nCopies(num, elem))

@@ -1,7 +1,7 @@
 package com.bnd.chemistry.business
 
-import com.bnd.core.test.Spring4Test
 import org.springframework.test.context.ContextConfiguration
+import com.bnd.core.test.Spring4Test
 
 /**
  * @author © Peter Banda

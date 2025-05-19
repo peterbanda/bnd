@@ -7,7 +7,7 @@ import java.{util => ju}
 
 class StateCollector[T, S[X]](implicit c : Copyable[S]) extends Subscriber[StateEvent[T, S], Publisher[StateEvent[T, S]]] {
 
-	type Pub = Publisher[StateEvent[T, S]]
+		type Pub = Publisher[StateEvent[T, S]]
 
     private val timeStates = ListBuffer[(BigDecimal, S[T])]()
 
@@ -23,5 +23,5 @@ class StateCollector[T, S[X]](implicit c : Copyable[S]) extends Subscriber[State
 	    	case _ =>
 		}
 
-	def collected : Seq[(BigDecimal, S[T])] = timeStates
+	def collected : ListBuffer[(BigDecimal, S[T])] = timeStates
 }

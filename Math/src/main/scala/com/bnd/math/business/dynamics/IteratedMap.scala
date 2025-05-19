@@ -1,13 +1,16 @@
 package com.bnd.math.business.dynamics
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.math._
 import com.bnd.core.runnable.StateAccessible
+
 import java.{lang => jl}
 import java.{util => ju}
-
+import scala.collection.mutable.Seq
 import com.bnd.core.runnable.FullStateAccessible
 import com.bnd.core.runnable.TimeRunnable
+
+import scala.collection.mutable
 
 class IteratedMap[T](val partialFunctions : Seq[Seq[T] => T]) extends TimeRunnable with FullStateAccessible[T, Int] {
 
@@ -23,21 +26,26 @@ class IteratedMap[T](val partialFunctions : Seq[Seq[T] => T]) extends TimeRunnab
 
     override def runUntil(finalTime : BigDecimal) = {
 	    while (time < finalTime.intValue) runOneStep
-	}
+		}
 
     override def nextTimeStepSize = 1 
 
-	override def getStates : ju.List[T] = states
+	override def getStates : ju.List[T] = states.asJava
 
-	override def setStates(states : ju.List[T]) : Unit = this.states = states
+	override def setStates(states : ju.List[T]) : Unit =
+		this.states = mutable.Seq.from(states.asScala)
 
-	override def setState(component : Int, state : T) : Unit = states.set(component, state)
+	override def setState(component : Int, state : T) : Unit =
+		states.update(component, state)
 
-	override def getState(component : Int) = states.get(component)
+	override def getState(component : Int) =
+		states(component)
 
-	override def componentStates = states.zipWithIndex.map(_.swap)
+	override def componentStates =
+		states.zipWithIndex.map(_.swap)
 
-	override def currentTime = time
+	override def currentTime =
+		time
 }
 
 object IteratedMap {

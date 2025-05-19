@@ -5,7 +5,7 @@ import com.bnd.core.DoubleConvertible._
 
 class TurningPointCountProcessorTest {
 
-  private val processor = new TurningPointCountProcessor[Double](0.00001, 0.1, 12.8)
+  private val processor = new TurningPointCountProcessor[Double](0.00001, 0.1, upperBound = 12.9)
 
   @Test
   def testProcessor {

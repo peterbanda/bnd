@@ -5,20 +5,18 @@ import java.{lang => jl, util => ju}
 import com.bnd.chemistry.business.ChemistryBenchmarkODETest._
 import com.bnd.chemistry.business.ChemistryTestDataGenerator._
 import com.bnd.chemistry.domain._
-import com.bnd.core.DoubleConvertible
 import com.bnd.plotter.Plotter
-import com.bnd.core.runnable.SeqIndexAccessible.Implicits._
-import com.bnd.core.runnable.{DistanceFixedPointDetector, FixedPointDetector, SeqIndexAccessible, StateAccessible, StateCollector, StateEvent, TimeStateManager, TimeStepUndefinedException}
 import com.bnd.function.domain.ODESolverType
+import com.bnd.core.runnable.{ FixedPointDetector, DistanceFixedPointDetector, StateEvent, SeqIndexAccessible, TimeStateManager, StateCollector, TimeStepUndefinedException }
+import com.bnd.core.DoubleConvertible
+import com.bnd.core.util.FileUtil
 import com.bnd.math.domain.rand.RandomDistribution
 import org.junit.{BeforeClass, FixMethodOrder, Test}
 import org.junit.runners.MethodSorters
-import com.bnd.core.CollectionElementsConversions._
 import com.bnd.plotter.{Plotter, SeriesPlotSetting}
-import com.bnd.core.runnable.{TimeRunnable, TimeStateManager, TimeStepUndefinedException}
-import com.bnd.core.util.FileUtil
+import com.bnd.core.runnable.{ TimeRunnable, StateAccessible }
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.Publisher
 import scala.util.Random
 
@@ -127,8 +125,10 @@ class ChemistryBenchmarkODETest extends ScalaChemistryTest {
         collectStates: Boolean = false
     ) = {
         acSimConfig.setOdeSolverType(odeType)
-        (compartments, initialStates).zipped.foreach(runChemistry(acSimConfig,_, fixedPointDetector)(_, collectStates))
 
+        (compartments, initialStates).zipped.foreach { case (compartment, states) =>
+            runChemistry(acSimConfig, compartment, fixedPointDetector)(states.map(new jl.Double(_)), collectStates)
+        }
     }
 
     def runChemistry(
@@ -150,7 +150,7 @@ class ChemistryBenchmarkODETest extends ScalaChemistryTest {
         if (collectStates || displayPlot) {
             system.subscribe(timeStateCollector)
         }
-        system.setStates(initialState)
+        system.setStates(initialState.asJava)
         //val startTime = System.nanoTime()
         try {
             system.runFor(time)
@@ -167,7 +167,14 @@ class ChemistryBenchmarkODETest extends ScalaChemistryTest {
               .setXAxis(timeStateCollector.collected.map(_._1.doubleValue))
               .setShowLegend(false)
 
-            val output = plotter.plotSeries(timeStateCollector.collected.map(_._2.iterator.toIterable), plotSetting)
+            val lines = timeStateCollector.collected.map(ts => {
+              val seqAccess = implicitly[SeqIndexAccessible[S]]
+              val length = seqAccess.size(ts._2)
+              (0 until length).map(i => seqAccess.apply(ts._2, i))
+            })
+
+            val output = plotter.plotSeries(lines, plotSetting)
+
             FileUtil.getInstance().overwriteStringToFileSafe(output, typ+"chemicals.svg");
 
         }

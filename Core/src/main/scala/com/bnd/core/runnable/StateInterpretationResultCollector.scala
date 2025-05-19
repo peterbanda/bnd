@@ -10,5 +10,5 @@ class StateInterpretationResultCollector[T, C, H] extends Subscriber[StateInterp
 
 	def notify(pub: Publisher[StateInterpretationEvent[T, C, H]], event: StateInterpretationEvent[T, C, H]) = results += event.result
 
-	def collected : Seq[StateInterpretationResult[T, C, H]] = results
+	def collected : ListBuffer[StateInterpretationResult[T, C, H]] = results
 }

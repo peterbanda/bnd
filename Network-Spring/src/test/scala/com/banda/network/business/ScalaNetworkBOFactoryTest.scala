@@ -2,12 +2,9 @@ package com.bnd.network.business
 
 import java.{lang => jl, util => ju}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
-import com.bnd.core.CollectionElementsConversions._
-import com.bnd.core.util.ConversionUtil
-import com.bnd.core.util.RandomUtil
 import com.bnd.function.business.FunctionFactory
 import com.bnd.function.domain.TransitionTable
 import com.bnd.network.domain.Network
@@ -15,10 +12,6 @@ import com.bnd.network.domain.NetworkFunction
 import com.bnd.network.domain.SpatialTopology
 import junit.framework.TestCase._
 import com.bnd.function.BndFunctionException
-import com.bnd.core.domain.MultiStateUpdateType
-import com.bnd.core.domain.MultiStateUpdateType
-import com.bnd.core.metrics.MetricsType
-import com.bnd.core.util.{ConversionUtil, RandomUtil}
 
 /**
  * @author © Peter Banda

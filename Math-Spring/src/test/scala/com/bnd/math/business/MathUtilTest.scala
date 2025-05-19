@@ -5,7 +5,7 @@ import com.bnd.math.domain.Stats
 import org.junit.Test
 import java.{lang => jl, util => ju}
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import org.junit.Assert._
 import org.springframework.beans.factory.annotation.Autowired
 import com.bnd.function.enumerator.ListEnumeratorFactory
@@ -145,8 +145,11 @@ class MathUtilTest extends MathTest {
         val inputDistribution = new UniformDistribution[Double](0.2, 1d)
 
         val globalOutputStream = new ListBuffer[Double]
-        for (_ <-1 to 10000) {
-            val trainingStream = ioStreamFactory.createInstance1D(lwmaFun(ksRDP.nextList(size), k0RDP.next)_)(0d, size, size)(inputDistribution)
+        for (_ <- 1 to 10000) {
+            val trainingStream = ioStreamFactory.createInstance1D(
+                lwmaFun(ksRDP.nextList(size).asScala, k0RDP.next)_
+            )(0d, size, size)(inputDistribution)
+
             globalOutputStream ++= trainingStream.outputStream.map(_.head).take(1000).toSeq
         }
 

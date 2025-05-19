@@ -2,7 +2,7 @@ package com.bnd.math.business.dynamics
 
 import java.{lang => jl, util => ju}
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import com.bnd.core.runnable.StateAccessible
 
 import scala.math.Numeric._
@@ -25,7 +25,7 @@ class SingleRunProcessorExec[T,O](val processor : SingleRunProcessor[T,O]) {
         }
 
         // state initial state
-        runnable.setStates(initialState)
+        runnable.setStates(initialState.asJava)
 
         val statesHistory = for (i <- 1 to iterations) yield nextStates() : Iterable[T]
 
@@ -45,10 +45,10 @@ class JavaDoubleSingleRunProcessorExec[O](val processor : DoubleSingleRunProcess
         initialState : ju.List[jl.Double],
         timeStepLength : jl.Double,
         iterations : jl.Integer
-    ) : O = {
-		val scalaDoubleRunnable = TimeRunnableDoubleAdapter(runnable)
-		val seq = initialState : Seq[jl.Double]
-		proxied.run(scalaDoubleRunnable, seq, timeStepLength, iterations)
+    ): O = {
+		    val scalaDoubleRunnable = TimeRunnableDoubleAdapter(runnable)
+		    val seq = initialState.asScala.toSeq : Seq[jl.Double]
+		    proxied.run(scalaDoubleRunnable, seq, timeStepLength, iterations)
     }
 }
 

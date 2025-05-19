@@ -6,7 +6,7 @@ import com.bnd.core.DoubleConvertible.Implicits._
 import scala.collection.mutable.ListBuffer
 import java.{lang => jl}
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import com.bnd.core.DoubleConvertible
 import com.bnd.core.XYExtractable
 import com.bnd.math.domain.dynamics._

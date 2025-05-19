@@ -1,13 +1,13 @@
 package com.bnd.network.business
 
-import java.{util => ju}
-
 import com.bnd.core.runnable.ConstantTimeStepSingleStateProducer
+
+import java.{util => ju}
 import com.bnd.function.evaluator.FunctionEvaluator
 import com.bnd.network.business.integrator.StatesWeightsIntegratorDef.StatesWeightsIntegrator
 import com.bnd.network.domain.TopologicalNode
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 /**
  * @author © Peter Banda
@@ -40,12 +40,13 @@ final class ArrayFunctionNodeStateProducer[T : Manifest](
 	override def nextSingleState(inNodeStates : Array[T], timeStep : Option[Double]) = {
 		var functionInputs = inNodeStates : Seq[T]
 		if (statesWeightsIntegrator.isDefined)
-			statesWeightsIntegrator.get(functionInputs, inNodesWeights)
+			statesWeightsIntegrator.get(functionInputs.asJava, inNodesWeights)
 		else
-			functionEvaluator.evaluate(functionInputs)
+			functionEvaluator.evaluate(functionInputs.asJava)
 	}
 
-	override def listInputComponentsInOrder = topologicalNode.getInNeighbors
+	override def listInputComponentsInOrder =
+		topologicalNode.getInNeighbors.asScala
 
 	override def outputComponent = topologicalNode
 

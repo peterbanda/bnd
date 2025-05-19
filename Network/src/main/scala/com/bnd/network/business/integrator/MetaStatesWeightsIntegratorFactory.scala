@@ -3,9 +3,9 @@ package com.bnd.network.business.integrator
 import java.{lang => jl}
 import java.util.{Collection, HashMap}
 import StatesWeightsIntegratorDef.StatesWeightsIntegrator
-import com.bnd.core.NumericConversions
 import com.bnd.network.domain.StatesWeightsIntegratorType
-import scala.collection.JavaConversions.collectionAsScalaIterable
+import com.bnd.core.NumericConversions
+import scala.jdk.CollectionConverters._
 
 object MetaStatesWeightsIntegratorFactory {
 
@@ -51,5 +51,9 @@ object MetaStatesWeightsIntegratorFactory {
 		plus : (T, T) => T)(
 		states: Collection[T],
 		weights: Collection[T]
-	) = (states, weights).zipped.map(times).reduceLeft(plus)
+	) = {
+		val statesSeq = states.asScala.toSeq
+		val weightsSeq = weights.asScala.toSeq
+		(statesSeq, weightsSeq).zipped.map(times).reduceLeft(plus)
+	}
 }

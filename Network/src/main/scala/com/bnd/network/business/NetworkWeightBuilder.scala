@@ -4,7 +4,6 @@ import com.bnd.network.domain.FixedNetworkWeightSetting
 import com.bnd.network.domain.LayeredNetworkWeightSetting
 import com.bnd.network.domain.NetworkWeightSelection
 import com.bnd.network.domain.TemplateNetworkWeightSetting
-import com.bnd.core.runnable.StateProducer
 
 trait NetworkWeightBuilder[N, -T] {
 

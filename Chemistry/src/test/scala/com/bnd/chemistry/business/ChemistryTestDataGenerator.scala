@@ -1,6 +1,6 @@
 package com.bnd.chemistry.business
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import com.bnd.chemistry.business.factory._
 import com.bnd.chemistry.domain._
 import com.bnd.function.business.ExpressionSupportedFunctionEvaluatorFactoryImpl
@@ -27,7 +27,7 @@ object ChemistryTestDataGenerator {
 
   def createSpeciesSetWithPrefix(speciesNum: Int, prefix: String): AcSpeciesSet = {
     val speciesSet = speciesSetFactory.createFixedOrder(speciesNum)
-    speciesSet.getVariables() foreach (s => s.setLabel(prefix + "_" + s.getLabel()))
+    speciesSet.getVariables().asScala.foreach (s => s.setLabel(prefix + "_" + s.getLabel()))
     speciesSet
   }
 
@@ -46,10 +46,13 @@ object ChemistryTestDataGenerator {
   ): AcReactionSet = {
     val reactionSet = reactionSetFactory.createRandomRS(
       reactionNum, reactionNum, reactionNum, 0, 0, createSpeciesSet(speciesNum), AcReactionSpeciesForbiddenRedundancy.None)
-    val filteredReactions = reactionSet.getReactions().filter(reaction => reaction.hasSpeciesAssociations(AcSpeciesAssociationType.Reactant)
-      || reaction.hasSpeciesAssociations(AcSpeciesAssociationType.Product))
-    setRateConstants(filteredReactions, randomDistribution)
-    reactionSet.setReactions(filteredReactions)
+
+    val filteredReactions = reactionSet.getReactions().asScala.filter(reaction =>
+      reaction.hasSpeciesAssociations(AcSpeciesAssociationType.Reactant) || reaction.hasSpeciesAssociations(AcSpeciesAssociationType.Product)
+    )
+
+    setRateConstants(filteredReactions.asJava, randomDistribution)
+    reactionSet.setReactions(filteredReactions.asJava)
     reactionSet
   }
 
@@ -73,12 +76,13 @@ object ChemistryTestDataGenerator {
     val speciesSet = createSpeciesSet(speciesNum)
     val reactionSet = reactionSetFactory.createComplexRS(speciesSet.getVariables(), acReactionSetConstraints, AcReactionSpeciesForbiddenRedundancy.None)
     reactionSet.setSpeciesSet(speciesSet)
-    val filteredReactions = reactionSet.getReactions().filter(reaction => reaction.hasSpeciesAssociations(AcSpeciesAssociationType.Reactant)
-      || reaction.hasSpeciesAssociations(AcSpeciesAssociationType.Product))
+    val filteredReactions = reactionSet.getReactions().asScala.filter(reaction =>
+      reaction.hasSpeciesAssociations(AcSpeciesAssociationType.Reactant) || reaction.hasSpeciesAssociations(AcSpeciesAssociationType.Product)
+    )
 
-    setRateConstants(filteredReactions, randomDistribution)
+    setRateConstants(filteredReactions.asJava, randomDistribution)
 
-    reactionSet.setReactions(filteredReactions)
+    reactionSet.setReactions(filteredReactions.asJava)
     reactionSet
   }
 
@@ -94,7 +98,7 @@ object ChemistryTestDataGenerator {
     randomDistribution: RandomDistribution[jl.Double]
   ) {
     val distributionProvider = RandomDistributionProviderFactory.apply(randomDistribution)
-    for (reaction <- reactions) {
+    for (reaction <- reactions.asScala) {
       reaction.setForwardRateConstant(distributionProvider.next())
     }
   }

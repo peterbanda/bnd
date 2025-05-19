@@ -1,11 +1,9 @@
 package com.bnd.math.business.dynamics
 
-import com.bnd.core.DoubleConvertible.DoubleAsDoubleConvertible
-import com.bnd.core.runnable.StateAccessible
 import com.bnd.math.business.dynamics.DynamicsAnalysisResultPlotter.plotBasic
 import com.bnd.math.business.dynamics.IteratedMap._
-import com.bnd.core.runnable.TimeRunnable
 import org.junit.{Ignore, Test}
+import com.bnd.core.runnable.{ TimeRunnable, StateAccessible }
 
 class SingleRunBasisAnalysisSuiteTest {
 

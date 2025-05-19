@@ -2,8 +2,6 @@ package com.bnd.network.business.learning
 
 import java.{lang => jl, util => ju}
 
-import com.bnd.core.metrics.{MetricsFactory, MetricsType}
-import com.bnd.core.util.{DateTimeUtil, FileUtil, RandomUtil}
 import com.bnd.math.business.learning._
 import com.bnd.math.business.rand.RandomDistributionProviderFactory
 import com.bnd.math.domain.learning.MachineLearningSetting.LearningRateAnnealingType
@@ -12,13 +10,10 @@ import com.bnd.math.domain.rand._
 import com.bnd.network.business._
 import com.bnd.network.domain._
 import com.bnd.plotter.{Plotter, SeriesPlotSetting}
-import com.bnd.core.domain.MultiStateUpdateType
-import com.bnd.core.metrics.MetricsFactory
-import com.bnd.core.util.{DateTimeUtil, FileUtil, RandomUtil}
 import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, _}
 import scala.concurrent.duration._

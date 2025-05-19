@@ -2,7 +2,7 @@ package com.bnd.math.business.dynamics
 
 import java.{lang => jl, util => ju}
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import com.bnd.core.DoubleConvertible
 import com.bnd.core.DoubleConvertible.Implicits._
 import com.bnd.core.runnable.StateAccessible
@@ -21,11 +21,15 @@ private class TimeRunnableDoubleAdapter[T : DoubleConvertible] (
 
     override def nextTimeStepSize = timeRunnable.nextTimeStepSize
 
-	override def getStates = timeRunnable.getStates.map(a => a : Double)
+	  override def getStates =
+      timeRunnable.getStates.asScala.map(a => a : Double).asJava
 
-	override def setStates(states : ju.List[Double]) = timeRunnable.setStates(states.map(a => a : T))
+	  override def setStates(states : ju.List[Double]) =
+      timeRunnable.setStates(
+        states.asScala.map(fromDouble).asJava
+      )
 
-	override def currentTime = timeRunnable.currentTime
+	  override def currentTime = timeRunnable.currentTime
 }
 
 object TimeRunnableDoubleAdapter {

@@ -5,7 +5,10 @@ import com.bnd.core.DoubleConvertible._
 
 class NonlinearityLastProcessorTest {
 
-  private val processor = new NonlinearityLastProcessor[Double](true, 12)
+  private val processor = new NonlinearityLastProcessor[Double](
+    normalized = true,
+    upperBound = 13
+  )
 
   @Test
   def testProcessor {

@@ -3,6 +3,7 @@ package com.bnd.network.business.learning
 import java.{lang => jl, util => ju}
 
 import com.bnd.core.domain.MultiStateUpdateType
+import com.bnd.core.metrics.MetricsFactory
 import com.bnd.math.business.learning.{IOStream, Trainer}
 import com.bnd.network.domain.ReservoirLearningSetting
 import com.bnd.math.domain.rand.RandomDistribution
@@ -11,10 +12,9 @@ import com.bnd.network.business.learning.NetworkTrainer
 import com.bnd.network.business.learning.NetworkTrainer.NetworkTrainer
 import com.bnd.network.business.{MetaNetworkRunnableFactory, TopologyFactory, WeightAccessible}
 import com.bnd.network.domain._
-import com.bnd.core.domain.MultiStateUpdateType
-import com.bnd.core.metrics.MetricsFactory
 
-import scala.collection.JavaConversions._
+// Use only the new scala.jdk converters for Scala 2.13
+import scala.jdk.CollectionConverters._
 
 class ReservoirTrainerFactory(
     metaNetworkRunnableFactory: MetaNetworkRunnableFactory,
@@ -22,6 +22,7 @@ class ReservoirTrainerFactory(
     doubleMetricsFactory: MetricsFactory[jl.Double]
   ) extends Serializable {
 
+  // First implementation 
   def apply(
     setting: ReservoirLearningSetting,
     ioStream: IOStream[jl.Double],
@@ -62,10 +63,11 @@ class ReservoirTrainerFactory(
       setting.getReservoirSpectralRadius,
       trainingStream,
       network,
-      topology.getLayers.last.getNonBiasNodes
+      topology.getLayers.asScala.last.getNonBiasNodes.asScala.toSeq
     )
   }
 
+  // Second implementation
   def apply(
     topology: Topology,
     setting: ReservoirLearningSetting,
@@ -96,7 +98,7 @@ class ReservoirTrainerFactory(
       setting.getReservoirSpectralRadius,
       trainingStream,
       network,
-      topology.getLayers.last.getNonBiasNodes
+      topology.getLayers.asScala.last.getNonBiasNodes.asScala.toSeq
     )
   }
 
@@ -262,7 +264,7 @@ class ReservoirTrainerFactory(
     } else {
       val layerFunction = new NetworkFunction[jl.Double]
       if (layer2FunctionParams.isDefined)
-        layerFunction.setActivationFunctionParams(layer2FunctionParams.get)
+        layerFunction.setActivationFunctionParams(layer2FunctionParams.get.asJava)
       layerFunction
     }
 

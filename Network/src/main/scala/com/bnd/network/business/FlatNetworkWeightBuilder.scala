@@ -8,7 +8,7 @@ import com.bnd.math.business.rand.RandomDistributionProvider
 import com.bnd.math.business.rand.RandomDistributionProviderFactory
 import com.bnd.math.domain.rand.RandomDistribution
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 private abstract class FlatNetworkWeightBuilder[T] extends NetworkWeightBuilder[Iterable[InWeightAccessible[T]], T] {
 
@@ -22,7 +22,7 @@ private abstract class FlatNetworkWeightBuilder[T] extends NetworkWeightBuilder[
 		fixedWeightSetting : FixedNetworkWeightSetting[B] 
 	) {
 		val settingOrder = fixedWeightSetting.getSettingOrder
-		val weightIterator = fixedWeightSetting.getWeights.iterator
+		val weightIterator = fixedWeightSetting.getWeights.iterator.asScala
 		settingOrder match {
 			case FixedNetworkWeightSettingOrder.SimpleOrder => setIteratedWeights(nodes, weightIterator, NetworkWeightSelection.All)
 			case FixedNetworkWeightSettingOrder.ImmutableWithinLayerFirst | FixedNetworkWeightSettingOrder.ImmutableGlobalFirst => 
@@ -35,16 +35,19 @@ private abstract class FlatNetworkWeightBuilder[T] extends NetworkWeightBuilder[
 		nodes : Iterable[InWeightAccessible[T]],
 		weightIterator : Iterator[B],
 		networkWeightSelection : NetworkWeightSelection
-	) = if (networkWeightSelection == NetworkWeightSelection.ImmutableAndThenMutable) {
+	) = {
+		val weightIteratorJava = weightIterator.asJava.asInstanceOf[ju.Iterator[T]]
+		if (networkWeightSelection == NetworkWeightSelection.ImmutableAndThenMutable) {
 			setIteratedWeights(nodes, weightIterator, NetworkWeightSelection.Immutable)
 			setIteratedWeights(nodes, weightIterator, NetworkWeightSelection.Mutable)
 		} else for (node <- nodes)
 			networkWeightSelection match {
-				case NetworkWeightSelection.All => node.setWeights(weightIterator)
-				case NetworkWeightSelection.Immutable => node.setImmutableWeights(weightIterator)
-				case NetworkWeightSelection.Mutable => node.setMutableWeights(weightIterator)
+				case NetworkWeightSelection.All => node.setWeights(weightIteratorJava)
+				case NetworkWeightSelection.Immutable => node.setImmutableWeights(weightIteratorJava)
+				case NetworkWeightSelection.Mutable => node.setMutableWeights(weightIteratorJava)
 				case _ => throw new BndNetworkException("'All', 'Immutable', or 'Mutable' network weight selection expected.")
 			}
+	}
 }
 
 private class NoTemplateFlatNetworkWeightBuilder[T] extends FlatNetworkWeightBuilder[T] {

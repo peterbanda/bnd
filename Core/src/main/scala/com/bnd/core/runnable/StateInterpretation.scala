@@ -1,6 +1,7 @@
 package com.bnd.core.runnable
 
 import scala.collection.Map
+import scala.collection.mutable.ListBuffer
 
 abstract class StateInterpretation[T, C, H, I <: StateInterpretationItem[T, C, H]](val items : Iterable[I]){
 	def startTime : BigDecimal
@@ -40,7 +41,7 @@ abstract class StateInterpretationItem[+T, +C, +H](
 case class RangeStateInterpretationItem[T, C, H](
     variable_ : H,
     components_ : Iterable[C],
-    val fun : (Map[C, Seq[T]], Map[H, T]) => T) extends StateInterpretationItem(variable_, components_)
+    val fun : (Map[C, ListBuffer[T]], Map[H, T]) => T) extends StateInterpretationItem(variable_, components_)
 
 case class PointStateInterpretationItem[T, C, H](
     variable_ : H,

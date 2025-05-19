@@ -3,12 +3,13 @@ package com.bnd.network.business.learning
 import java.util.Collections
 import java.{lang => jl}
 
+import com.bnd.core.domain.MultiStateUpdateType
 import com.bnd.network.business.NetworkRunnableFactoryUtil.NetworkRunnable
 import com.bnd.network.business.{MetaNetworkRunnableFactory, TopologyFactory}
 import com.bnd.network.domain._
-import com.bnd.core.domain.MultiStateUpdateType
 
-import scala.collection.JavaConversions._
+// Use the Scala 2.13 converters
+import scala.jdk.CollectionConverters._
 
 class ReservoirRunnableFactory(
     metaNetworkRunnableFactory: MetaNetworkRunnableFactory,
@@ -28,12 +29,12 @@ class ReservoirRunnableFactory(
 
     val (networkRunnable, weightAccessor) = doubleNetworkRunnableFactory.createNonInteractiveWeightAccessible(network, new NetworkSimulationConfig)
 
-    val input = topology.getLayers.head
-    val reservoir = topology.getLayers.last
+    val input = topology.getLayers.asScala.head
+    val reservoir = topology.getLayers.asScala.last
 
     // normalize the reservoir weights for a given spectral radius (if defined)
     if (setting.reservoirSpectralRadius.isDefined) {
-      NetworkTrainer.normalizeWeights(reservoir.getAllNodes, weightAccessor, setting.reservoirSpectralRadius.get)
+      NetworkTrainer.normalizeWeights(reservoir.getAllNodes.asScala, weightAccessor, setting.reservoirSpectralRadius.get)
     }
 
     val inputNodes = input.getNonBiasNodes
@@ -42,7 +43,7 @@ class ReservoirRunnableFactory(
     Collections.sort(inputNodes)
     Collections.sort(reservoirNodes)
 
-    (networkRunnable, inputNodes, reservoirNodes)
+    (networkRunnable, inputNodes.asScala.toSeq, reservoirNodes.asScala.toSeq)
   }
 
   private def createTwoLayerReservoirNetwork(
@@ -156,7 +157,7 @@ class ReservoirRunnableFactory(
     } else {
       val layerFunction = new NetworkFunction[jl.Double]
       if (reservoirFunctionParams.nonEmpty)
-        layerFunction.setActivationFunctionParams(reservoirFunctionParams.map(x => x: jl.Double))
+        layerFunction.setActivationFunctionParams(reservoirFunctionParams.map(x => x: jl.Double).asJava)
 
       layerFunction
     }

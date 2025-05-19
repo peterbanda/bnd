@@ -4,7 +4,7 @@ import java.{util => ju}
 
 import com.bnd.core.runnable.TimeRunnable
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.math.Numeric._
 import scala.math.Integral.Implicits._
 import scala.math._

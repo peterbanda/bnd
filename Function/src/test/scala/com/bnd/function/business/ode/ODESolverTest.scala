@@ -1,19 +1,16 @@
 package com.bnd.function.business.ode
 
-import org.junit.Test
-
-import scala.collection.JavaConversions._
-import com.bnd.function.business.ScalaFunctionEvaluatorConversions._
-import java.{lang => jl, util => ju}
-
-import com.bnd.function.domain.ODESolverType
-import com.bnd.core.CollectionElementsConversions._
-import org.junit.Assert._
-import java.util.Random
-
-import com.bnd.core.util.FileUtil
 import com.bnd.core.dynamics.ODESolver
 import com.bnd.core.util.FileUtil
+import org.junit.Test
+import com.bnd.function.business.ScalaFunctionEvaluatorConversions._
+
+import java.{lang => jl, util => ju}
+import scala.collection.JavaConverters._
+import com.bnd.function.domain.ODESolverType
+import org.junit.Assert._
+
+import java.util.Random
 
 class ODESolverTest {
 
@@ -50,7 +47,7 @@ class ODESolverTest {
                 val listt = streamt takeWhile (_ < elapsedTime)
                 val steps = listt.size
 
-                val concentrations: Array[List[jl.Double]] = streamc take steps
+                val concentrations: Array[List[jl.Double]] = (streamc take steps).toArray
                 val time = System.nanoTime() - startTime
 
                 // the error is the discrepancy between the expected final P concentration
@@ -75,59 +72,59 @@ class ODESolverTest {
         dist
     }
 
-    //    @Test
-    //    def RK4comparison {
-    //        val random = new Random()
-    //        val stepSizes = Array(0.001, 0.005, 0.01, 0.05)
-    //        val runs = 1000
-    //        val elapsedTime = 5
-    //        for (stepSize <- stepSizes) {
-    //            println("Step Size: " + stepSize)
-    //            var time: Long = 0 // The positions in these arrays correspond to
-    //            var error = 0d // the adaptiveNames array
-    //            val avgtimes = Array(0d, 0d, 0d)
-    //            val avgErrors = Array(0d, 0d, 0d)
-    //            val one: List[jl.Double] = List(1d, 1d)
-    //            val two: List[jl.Double] = List(2d, 2d)
-    //
-    //            for (i <- 1 to runs) {
-    //                // val refSolver = createAdaptiveLorenzSolver(ODESolverType.RungeKuttaCashKarp, 0.001, 0.001)
-    //                val S1, S2, P = random.nextDouble() * 200 - 100
-    //                val initialConcentrations: List[jl.Double] = List(S1, S2, P)
-    //
-    //                val refSolver = createAdaptiveLorenzSolver(ODESolverType.RungeKuttaCashKarp, 0.001, 0.001)
-    //                val refstream = iterateODESolver(refSolver, 0.0002)(initialConcentrations)
-    //                val refstreamv = refstream.map(_._2)
-    //                val refstreamt = refstream.map(_._1)
-    //
-    //                val reflistt = refstreamt takeWhile (a => a < elapsedTime) // && ! a.isNaN() && ! a.isInfinite())
-    //                val refsteps = reflistt.size
-    //                val reffinalv = refstreamv.apply(refsteps)
-    //
-    //                val Solver = createChemSolver(ODESolverType.RungeKutta4, stepSize)
-    //                val stream = iterateODESolver(Solver, stepSize)(initialConcentrations)
-    //                val streamv = stream.map(_._2)
-    //                val streamt = stream.map(_._1)
-    //
-    //                // What I am timing is the determination of how many time steps covers the 'elapsed time,'
-    //                // accessing that many concentrations coordinates and loading them into an array.
-    //                val startTime = System.nanoTime()
-    //                val listt = streamt takeWhile (a => a < elapsedTime) // && ! a.isNaN() && ! a.isInfinite())
-    //                val steps = listt.size
-    //
-    //                val concentrations: Array[List[jl.Double]] = streamv take steps
-    //
-    //                // the error is the discrepancy between the expected final P concentration
-    //                // and what the system produces
-    //                time = time + (System.nanoTime() - startTime)
-    //                error = error + distance(streamv(steps),reffinalv)
-    //            }
-    //            val runTime = time / (runs * 1000000d)
-    //            // dividing by 1,000,000 converts avgTime to ms
-    //            error = error / runs
-    //            println("avgError = " + error + " avgTime = " + runTime)
-    //        }
-    //    }
+        @Test
+        def RK4comparison {
+            val random = new Random()
+            val stepSizes = Array(0.001, 0.005, 0.01, 0.05)
+            val runs = 1000
+            val elapsedTime = 5
+            for (stepSize <- stepSizes) {
+                println("Step Size: " + stepSize)
+                var time: Long = 0 // The positions in these arrays correspond to
+                var error = 0d // the adaptiveNames array
+                val avgtimes = Array(0d, 0d, 0d)
+                val avgErrors = Array(0d, 0d, 0d)
+                val one: List[jl.Double] = List(1d, 1d)
+                val two: List[jl.Double] = List(2d, 2d)
+
+                for (i <- 1 to runs) {
+                    // val refSolver = createAdaptiveLorenzSolver(ODESolverType.RungeKuttaCashKarp, 0.001, 0.001)
+                    val S1, S2, P = random.nextDouble() * 200 - 100
+                    val initialConcentrations: List[jl.Double] = List(S1, S2, P)
+
+                    val refSolver = createAdaptiveLorenzSolver(ODESolverType.RungeKuttaCashKarp, 0.001, 0.001)
+                    val refstream = iterateODESolver(refSolver, 0.0002)(initialConcentrations)
+                    val refstreamv = refstream.map(_._2)
+                    val refstreamt = refstream.map(_._1)
+
+                    val reflistt = refstreamt takeWhile (a => a < elapsedTime) // && ! a.isNaN() && ! a.isInfinite())
+                    val refsteps = reflistt.size
+                    val reffinalv = refstreamv.apply(refsteps)
+
+                    val Solver = createChemSolver(ODESolverType.RungeKutta4, stepSize)
+                    val stream = iterateODESolver(Solver, stepSize)(initialConcentrations)
+                    val streamv = stream.map(_._2)
+                    val streamt = stream.map(_._1)
+
+                    // What I am timing is the determination of how many time steps covers the 'elapsed time,'
+                    // accessing that many concentrations coordinates and loading them into an array.
+                    val startTime = System.nanoTime()
+                    val listt = streamt takeWhile (a => a < elapsedTime) // && ! a.isNaN() && ! a.isInfinite())
+                    val steps = listt.size
+
+                    val concentrations: Array[List[jl.Double]] = (streamv take steps).toArray
+
+                    // the error is the discrepancy between the expected final P concentration
+                    // and what the system produces
+                    time = time + (System.nanoTime() - startTime)
+                    error = error + distance(streamv(steps),reffinalv)
+                }
+                val runTime = time / (runs * 1000000d)
+                // dividing by 1,000,000 converts avgTime to ms
+                error = error / runs
+                println("avgError = " + error + " avgTime = " + runTime)
+            }
+        }
 
     //    @Test
     //    def timeAccLorenz {
@@ -643,8 +640,8 @@ class ODESolverTest {
     def iterateODESolver(solver: ODESolver, lowerBound: jl.Double)(x: List[jl.Double]) = {
         def iterate(time: Double, x: List[jl.Double]): Stream[(Double, List[jl.Double])] = {
             val newTime = time + solver.getTimeStep
-            val xDiff: Iterable[jl.Double] = solver.getApproxDiffs(x: ju.List[jl.Double])
-            val xNew: List[jl.Double] = (x, xDiff).zipped.map { (a, b) => a + b }
+            val xDiff: Iterable[jl.Double] = solver.getApproxDiffs(x.toArray)
+            val xNew: List[jl.Double] = (x, xDiff).zipped.map { (a, b) => (a + b): jl.Double }
             val xNewNew: List[jl.Double] = xNew.map(a => if (a < lowerBound) 0: jl.Double else a)
             if (xNewNew.exists(_ < 0)) println("BAd bad")
             (newTime, xNewNew) #:: iterate(newTime, xNewNew)

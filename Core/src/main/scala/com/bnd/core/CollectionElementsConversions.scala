@@ -1,15 +1,14 @@
 package com.bnd.core
 
-import scala.Array._
-import scala.collection.JavaConversions._
-// import scala.collection.JavaConverters._
-import java.{lang => jl, util => ju}
+import com.bnd.core.util.ConversionUtil
 
+import scala.Array._
+import scala.jdk.CollectionConverters._
+import java.{lang => jl, util => ju}
 import scala.collection.Iterable
 import java.{lang => jl}
 import java.{util => ju}
-
-import com.bnd.core.util.ConversionUtil
+import scala.reflect.ClassManifest
 
 object CollectionElementsConversions {
 
@@ -99,7 +98,7 @@ object CollectionElementsConversions {
 
   implicit def javaListMatrixToScalaSeqMatrix[T,C[X] <: Iterable[X]]
   (matrix: C[ju.List[T]]): C[Seq[T]] = {
-    (matrix map (x => asScalaBuffer(x): Seq[T])).asInstanceOf[C[Seq[T]]]
+    (matrix map (x => x.asScala.toSeq)).asInstanceOf[C[Seq[T]]]
   }
 
   implicit def scalaDoubleConvertibleMatrixToScalaDoubleMatrix[T : DoubleConvertible]
@@ -122,19 +121,19 @@ object CollectionElementsConversions {
 
   implicit def javaIterableToScalaIterable[T](
     list : jl.Iterable[T]
-  ) : Iterable[T] = iterableAsScalaIterable(list)
+  ) : Iterable[T] = list.asScala
 
   implicit def scalaIterableToJavaIterable[T](
     list : Iterable[T]
-  ) : jl.Iterable[T] = asJavaIterable(list)
+  ) : jl.Iterable[T] = list.asJava
 
   implicit def javaMatrixIterableToScalaMatrixIterable[T](
     list : jl.Iterable[_ <: jl.Iterable[T]]
-  ) : Iterable[Iterable[T]] = iterableAsScalaIterable(list).map(x => iterableAsScalaIterable(x))
+  ) : Iterable[Iterable[T]] = list.asScala.map(x => x.asScala)
 
   implicit def scalaMatrixIterableToJavaMatrixIterable[T](
     list : Iterable[_ <: Iterable[T]]
-  ) : jl.Iterable[jl.Iterable[T]] = asJavaIterable(list.map(x => asJavaIterable(x)))
+  ) : jl.Iterable[jl.Iterable[T]] = list.map(x => x.asJava).asJava
 
   // TODO: Move it somewhere else
   def drop[T](i: Int)(list: Iterable[T]) =

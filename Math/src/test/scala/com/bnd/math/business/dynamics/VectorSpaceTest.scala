@@ -1,10 +1,10 @@
 package com.bnd.math.business.dynamics
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.collection._
 import scala.math._
 import scala.math.Integral._
-import scala.Numeric.DoubleAsIfIntegral
+import scala.math.Numeric.DoubleIsFractional
 import com.bnd.core.DoubleConvertible.Implicits._
 
 import org.junit.Test
@@ -13,8 +13,8 @@ import com.bnd.core.CollectionElementsConversions._
 
 class VectorSpaceTest {
 
-    // TODO: this is supposed to be provided automatically
-    implicit val doubleAsIntegral = DoubleAsIfIntegral
+//    // TODO: this is supposed to be provided automatically
+//    implicit val doubleAsIntegral = DoubleIsFractional
 
     val vectorSpace = new EuclideanVectorSpace[Double]
 

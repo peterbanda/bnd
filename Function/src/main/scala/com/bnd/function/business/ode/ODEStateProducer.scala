@@ -1,11 +1,10 @@
 package com.bnd.function.business.ode
 
-import com.bnd.core.runnable.StateProducer
 import java.{lang => jl, util => ju}
-
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import com.bnd.core.CollectionElementsConversions._
 import com.bnd.core.dynamics.ODESolver
+import com.bnd.core.runnable.StateProducer
 
 abstract class ODEStateProducer[C](private val solver : ODESolver) extends StateProducer[jl.Double, C, Array] {
 

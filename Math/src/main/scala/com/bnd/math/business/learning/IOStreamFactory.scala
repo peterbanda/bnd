@@ -14,7 +14,7 @@ import com.bnd.math.business.rand.RandomDistributionProviderFactory
 import com.bnd.math.domain.learning._
 import com.bnd.math.domain.rand.RandomDistribution
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 class IOStreamFactory(private val feFactory : FunctionEvaluatorFactory) extends Serializable {
 
@@ -35,8 +35,10 @@ class IOStreamFactory(private val feFactory : FunctionEvaluatorFactory) extends 
 		}
 
 		new IOStream[T](
-		    trainingPairs.map(_.getInput()),
-		    trainingPairs.map(_.getDesiredOutput()), 1)
+		    trainingPairs.map(_.getInput().toSeq),
+		    trainingPairs.map(_.getDesiredOutput().toSeq),
+				1
+		)
 	}
 
 
@@ -58,7 +60,8 @@ class IOStreamFactory(private val feFactory : FunctionEvaluatorFactory) extends 
 		outputShift : Int = 3
 	) = createInstance1D[T](tripleFunToIterableFun(fun))(zero, 3, outputShift)_
 
-	def createInstance1DVarargs[T <: Number](fun : (T*) => T) = createInstance1D[T](varargsFunToIterableFun(fun))_
+	// originally: (T*) => T
+	def createInstance1DVarargs[T <: Number](fun : Seq[T] => T) = createInstance1D[T](varargsFunToIterableFun(fun))_
 
 	def createInstance1DFun[T <: Number](
 	    fun : fd.Function[T, T]) = createInstance1D[T](feFactory.createInstance(fun))_
@@ -121,7 +124,7 @@ class IOStreamFactory(private val feFactory : FunctionEvaluatorFactory) extends 
 			inputSize : Int
 	) : IOStream[T] = {
 			val inputDP = RandomDistributionProviderFactory.apply(inputDistribution)
-			val inputs = Stream.continually(inputDP.nextList(inputSize) : Seq[T])
+			val inputs = Stream.continually(inputDP.nextList(inputSize).asScala.toSeq)
 			createInstanceWithInputs[T](fun)(windowSize)(inputs)
 	}
 
@@ -131,7 +134,7 @@ class IOStreamFactory(private val feFactory : FunctionEvaluatorFactory) extends 
 		inputSize : Int
 	) : IOStream[T] = {
 		val inputDP = RandomDistributionProviderFactory.apply(inputDistribution)
-		val inputs = Stream.continually(inputDP.nextList(inputSize) : Seq[T])
+		val inputs = Stream.continually(inputDP.nextList(inputSize).asScala.toSeq)
 		new IOStream[T](inputs, inputs.map(x => Seq(fun(x))), 0)
 	}
 
@@ -252,8 +255,9 @@ class IOStreamFactory(private val feFactory : FunctionEvaluatorFactory) extends 
   private def transposeStreams[T](ss : Seq[Stream[T]]) : Stream[Seq[T]] =
     ss.map(_.head) #:: transposeStreams[T](ss.map(_.tail))  
 
-	private def varargsFunToIterableFun[T,Q](fun : (T*) => Q) : Iterable[T] => Q = {
-	    x : Iterable[T] => fun(x.toList : _*)}
+	// originally (T*) => T
+	private def varargsFunToIterableFun[T,Q](fun : Seq[T] => Q) : Iterable[T] => Q = {
+	    x : Iterable[T] => fun(x.toSeq)}
 
 	private def pairFunToIterableFun[T,Q](fun : (T,T) => Q) : Iterable[T] => Q = {
 	    x : Iterable[T] => {val xx = x.toSeq; fun(xx(0), xx(1))}}

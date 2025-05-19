@@ -8,7 +8,6 @@ import com.bnd.function.evaluator.FunctionEvaluator;
 import com.bnd.function.evaluator.FunctionEvaluatorFactory;
 import com.bnd.network.BndNetworkException;
 import com.bnd.network.business.integrator.JavaStatesWeightsIntegrator;
-import com.bnd.network.business.integrator.StatesWeightsIntegratorFactory;
 import com.bnd.network.domain.*;
 
 /**
@@ -20,31 +19,20 @@ public class NetworkBOFactory<T> {
 	private final FunctionEvaluatorFactory functionEvaluatorFactory;
 	private final TopologyFactory topologyFactory;
 	private final UntypedNetworkBOWeightBuilder<T> networkWeightBuilder;
-	private final StatesWeightsIntegratorFactory<T> integratorFactory;
 
 	protected NetworkBOFactory(
 		FunctionEvaluatorFactory functionEvaluatorFuctory,
 		TopologyFactory topologyFactory,
-		UntypedNetworkBOWeightBuilder<T> networkWeightSetter,
-		StatesWeightsIntegratorFactory<T> integratorFactory
+		UntypedNetworkBOWeightBuilder<T> networkWeightSetter
 	) {
 		this.functionEvaluatorFactory = functionEvaluatorFuctory;
 		this.topologyFactory = topologyFactory;
 		this.networkWeightBuilder = networkWeightSetter;
-		this.integratorFactory = integratorFactory;
-	}
-
-	protected NetworkBOFactory(
-		FunctionEvaluatorFactoryImpl functionEvaluatorFuctory,
-		TopologyFactory topologyFactory,
-		UntypedNetworkBOWeightBuilder<T> networkWeightSetter
-	) {
-		this(functionEvaluatorFuctory, topologyFactory, networkWeightSetter, (StatesWeightsIntegratorFactory<T>) null);
 	}
 
 	public NetworkBO<T> createNetworkBO(Network<T> network) {
 		StatesWeightsIntegratorType integratorType = network.getFunction().getStatesWeightsIntegratorType();
-		if (integratorType != null && integratorFactory == null)
+		if (integratorType != null)
 			throw new BndNetworkException("States-weights integrator of type '" + integratorType + "' specified for network '" + network.getId() + "' but no integrator provided.");
 
 		final Topology topology = topologyFactory.apply(network.getTopology());
@@ -124,10 +112,6 @@ public class NetworkBOFactory<T> {
 			throw new BndNetworkException("A topology with nodes expected.");
 		}
 		JavaStatesWeightsIntegrator<T> statesWeightsIntegrator = null;
-		if (integratorFactory != null) {
-			// TODO: derelease
-//			statesWeightsIntegrator = integratorFactory.createIntegrator(networkFunction.getStatesWeightsIntegratorType());
-		}
 
 		FunctionEvaluator<T, T> functionEvaluator = null;
 		if (networkFunction.getFunction() != null) {

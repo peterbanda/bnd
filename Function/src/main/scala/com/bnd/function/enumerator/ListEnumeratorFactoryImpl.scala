@@ -11,7 +11,7 @@ import com.bnd.core.BndRuntimeException
  * @author © Peter Banda
  * @since 2013
  */
-final private[bnd] class ListEnumeratorFactoryImpl extends ListEnumeratorFactory with Serializable {
+private[bnd] class ListEnumeratorFactoryImpl extends ListEnumeratorFactory with Serializable {
 
     implicit def liftAnyValToNumeric[T <: AnyVal](implicit m: Manifest[T]) = NumericConversions.liftAnyValToNumeric[T]
 

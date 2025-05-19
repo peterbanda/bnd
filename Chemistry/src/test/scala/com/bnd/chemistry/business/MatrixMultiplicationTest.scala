@@ -3,11 +3,11 @@ package com.bnd.chemistry.business
 import java.{lang => jl, util => ju}
 
 import com.bnd.chemistry.business.MatrixMultiplicationTest._
-import com.bnd.core.util.ConversionUtil
-import com.bnd.core.util.{ConversionUtil, RandomUtil}
 import org.jblas.DoubleMatrix
 import org.junit.runners.MethodSorters
 import org.junit.{BeforeClass, FixMethodOrder, Test}
+import com.bnd.core.runnable.{ TimeRunnable, StateAccessible }
+import com.bnd.core.util. { RandomUtil, ConversionUtil }
 
 object MatrixMultiplicationTest{
 

@@ -1,39 +1,41 @@
 package com.bnd.math.business.dynamics
 
 import scala.Array._
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.HashMap
 import scala.collection._
 import scala.math.Integral.Implicits._
+import scala.math.Fractional.Implicits._
 import scala.math.Numeric
 import scala.math._
-import java.util.Date
 import com.bnd.core.CollectionElementsConversions._
 import com.bnd.core._
+
 import scala.util.Random
 
-class VectorSpace[T : Integral](
+class VectorSpace[T : Fractional](
     val calcInnerProduct : (Iterable[T], Iterable[T]) => T,
     val calcNorm : Iterable[T] => T,
     val createRandomVectorFromNorm : (T, Int) => Iterable[T]) {
 
-    val num = implicitly[Integral[T]]
+    val num = implicitly[Fractional[T]]
     val zero = num.zero
 
-	// Gram–Schmidt method for orthogonal vectors
+		// Gram–Schmidt method for orthogonal vectors
     def orthogonalizeVectors[C[X] <: Iterable[X]](
         vectors: Iterable[C[T]]
     ): Iterable[C[T]] = {
         var innerProductMap = new HashMap[Int, T]
         // define vector projection
-        def projectVector(index : Int, u : C[T], v : C[T]) = {
-            var selfProduct = innerProductMap.getOrElseUpdate(index, calcInnerProduct(u,u))
+        def projectVector(index : Int, u : C[T], v : C[T]): C[T] = {
+        		val selfProduct = innerProductMap.getOrElseUpdate(index, calcInnerProduct(u,u))
             if (selfProduct != num.zero) {
             	val productRatio = calcInnerProduct(u,v) / selfProduct
-            	u.view map (_ * productRatio)
+							// u.view removed and replaced with u
+            	u.map { x: T => x * productRatio }.asInstanceOf[C[T]]
             } else {
-                u
+              u
             }
         }
 
@@ -41,8 +43,11 @@ class VectorSpace[T : Integral](
         var orthogonalVectors : ListBuffer[C[T]] = ListBuffer()
         for (vector <- vectors) {
             val projectThroughVector = projectVector(_ : Int, _ : C[T], vector)
-            val orthogonalVector = orthogonalVectors.view.zipWithIndex.map(e =>  projectThroughVector(e._2, e._1)).
-            		foldLeft(vector)((_,_).zipped.map(_-_).asInstanceOf[C[T]])
+            val orthogonalVector = orthogonalVectors.view.zipWithIndex.map(e =>
+							projectThroughVector(e._2, e._1)
+						).foldLeft(vector) { (u: C[T], v: C[T]) =>
+							(u, v).zipped.map(_ - _).asInstanceOf[C[T]]
+						}
             orthogonalVectors += orthogonalVector
         }
         orthogonalVectors.toList
@@ -66,9 +71,13 @@ class VectorSpace[T : Integral](
         // create orthonormal vectors directly
         var orthonormalVectors : ListBuffer[C[T]] = ListBuffer()
         for (vector <- vectors) {
-            val orthogonalVector = (for (otherVector <- orthonormalVectors)
-                						yield projectVector(otherVector, vector)).foldLeft(vector)((_,_).zipped.map(_-_).asInstanceOf[C[T]])
-        	orthonormalVectors += normalizeVector(orthogonalVector)
+            val orthogonalVector = (
+							for (otherVector <- orthonormalVectors) yield projectVector(otherVector, vector)
+						).foldLeft(vector) { (u: C[T], v: C[T]) =>
+							(u, v).zipped.map(_ - _).asInstanceOf[C[T]]
+						}
+
+        		orthonormalVectors += normalizeVector(orthogonalVector)
         }
         orthonormalVectors.toList
     }
@@ -146,12 +155,12 @@ object RandomVectors {
 	}
 }
 
-class EuclideanVectorSpace[T : DoubleConvertible : Integral] extends VectorSpace[T](
+class EuclideanVectorSpace[T : DoubleConvertible : Fractional] extends VectorSpace[T](
         InnerProducts.calcEuclideanInnerProduct(_,_),
         Norms.calcEuclideanVectorNorm(_),
         RandomVectors.createEuclideanRandomVectorFromNorm(_,_))
 
-class ManhattanVectorSpace[T : DoubleConvertible : Integral] extends VectorSpace[T](
+class ManhattanVectorSpace[T : DoubleConvertible : Fractional] extends VectorSpace[T](
         InnerProducts.calcEuclideanInnerProduct(_,_),
         Norms.calcManhattanVectorNorm(_),
         RandomVectors.createManhattanRandomVectorFromNorm(_,_))

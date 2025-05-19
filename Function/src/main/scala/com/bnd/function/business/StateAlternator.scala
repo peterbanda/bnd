@@ -6,7 +6,7 @@ import com.bnd.core.runnable.StateAccessible
 import com.bnd.core.runnable.FullStateAccessible
 import com.bnd.core.dynamics.StateAlternationType
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 abstract class StateAlternator[T, C](
 	protected val alternationType : StateAlternationType,
@@ -18,7 +18,7 @@ abstract class StateAlternator[T, C](
 
 	def alterState : Unit = 
 		alternationType match {
-			case StateAlternationType.Replacement => (components, stateAlternations).zipped.foreach(stateAccesible.setState)
+			case StateAlternationType.Replacement => (components.asScala, stateAlternations.asScala).zipped.foreach(stateAccesible.setState)
 			case StateAlternationType.Addition => handleAddition
 			case StateAlternationType.Influx => handleInflux
 		}

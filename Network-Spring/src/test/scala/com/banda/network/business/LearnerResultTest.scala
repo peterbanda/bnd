@@ -2,7 +2,6 @@ package com.bnd.network.business
 
 import java.io.File
 
-import com.bnd.core.util.FileUtil
 import org.junit.Test
 
 /**

@@ -1,7 +1,6 @@
 package com.bnd.core.runnable
 
 import java.{util => ju}
-
 import SeqIndexAccessible.Implicits._
 import com.bnd.core.BndRuntimeException
 

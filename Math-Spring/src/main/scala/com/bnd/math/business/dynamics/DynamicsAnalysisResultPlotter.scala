@@ -1,13 +1,15 @@
 package com.bnd.math.business.dynamics
 
-import java.{lang => jl}
-
-import com.bnd.core.CollectionElementsConversions._
 import com.bnd.core.DoubleConvertible
+
+import java.{lang => jl}
 import com.bnd.math.business.MathUtil
 import com.bnd.math.domain.dynamics.SingleRunAnalysisResultType
 import com.bnd.math.domain.{Stats, StatsType}
 import com.bnd.plotter.{Plotter, SeriesPlotSetting}
+
+import scala.collection.convert.ImplicitConversions.`iterable AsScalaIterable`
+import scala.jdk.CollectionConverters.IterableHasAsScala
 
 class DynamicsAnalysisResultPlotter(private val plotter: Plotter[Unit]) {
 
@@ -27,16 +29,18 @@ class DynamicsAnalysisResultPlotter(private val plotter: Plotter[Unit]) {
 	//            _ : Iterable[Iterable[Double]], _ : Double, _ : Double, _ : Double, _ : String)
 
 	def plotBasic(results : SingleRunBasicResults, title : String) {
-		plotter.plotMatrix(results.spatialCorrelationMatrix, "Spatial Correlations: " + title)
+		plotter.plotMatrix(results.spatialCorrelationMatrix.map(_.toSeq), "Spatial Correlations: " + title)
 
-		plotter.plotMatrix(results.timeCorrelationMatrix, "Time Correlations:  " + title)
+		plotter.plotMatrix(results.timeCorrelationMatrix.map(_.toSeq), "Time Correlations:  " + title)
 
 		plotter.plotSeries(
       results.stationaryPointsPerTime,
       new SeriesPlotSetting().setTitle("Stationary Points Per Time: " + title)
     )
 
-		val globalFixedPointCount = results.fixedPointDetectedFlags.transpose.map(x  => (x : Iterable[Double]).sum)
+		val globalFixedPointCount = results.fixedPointDetectedFlags.transpose.map(x =>
+			x.map(if (_) 1d else 0d).sum
+		)
 
 		plotter.plotSingleSeries(
 			globalFixedPointCount,
@@ -60,6 +64,8 @@ class DynamicsAnalysisResultPlotter(private val plotter: Plotter[Unit]) {
 	}
 
 	def plotFull[T : DoubleConvertible](results : FullResults[T], title : String) {
+		val conv = implicitly[DoubleConvertible[T]]
+
 		plotBasic(results, title)
 
 		plotter.plotSeries(
@@ -70,7 +76,9 @@ class DynamicsAnalysisResultPlotter(private val plotter: Plotter[Unit]) {
         .setTransposed(true)
     )
 
-		plotter.plotXYWithRanges(results.derridaResults, 0D, 1D, 0D, "Derrida: " + title)
+		plotter.plotXYWithRanges(
+			results.derridaResults.map(_.map(conv.toDouble)), 0D, 1D, 0D, "Derrida: " + title
+		)
 	}
 
 	def plotStats[T](results : StatsResults, title : String) {
@@ -120,7 +128,7 @@ class DynamicsAnalysisResultPlotter(private val plotter: Plotter[Unit]) {
 		title : String
 	) {
 		val xyMeanData = stats.map(s => List(s.getPos, proj(s)))
-		plotter.plotXY(xyMeanData, title)
+		plotter.plotXY(xyMeanData.map(_.map(new jl.Double(_))), title)
 	}
 }
 
@@ -132,8 +140,8 @@ class JavaStatsPlotter(private val plotter: Plotter[Unit]) {
 		stats: jl.Iterable[Stats],
 		title: String
 	) {
-		val xyData = stats.map(s => List(s.getPos, proj(s)))
-		plotter.plotXY(xyData, title)
+		val xyData = stats.asScala.map(s => List(s.getPos, proj(s)))
+		plotter.plotXY(xyData.map(_.map(_.toDouble)), title)
 	}
 
 	def plotStatsForType(statsType : StatsType) =
@@ -143,7 +151,7 @@ class JavaStatsPlotter(private val plotter: Plotter[Unit]) {
 		if (value == null) None else Option(value : Double)
 
 	private def toOption[T](value : jl.Iterable[T]) : Option[Iterable[T]] =
-		if (value == null) None else Option(value : Iterable[T])
+		if (value == null) None else Option(value.asScala : Iterable[T])
 
 	def plotStats(
 		stats : jl.Iterable[Stats],
@@ -176,7 +184,7 @@ class JavaStatsPlotter(private val plotter: Plotter[Unit]) {
 		yRangeMax : jl.Double,
 		captions : jl.Iterable[String]
 	) {
-		val scalMultiStats : Iterable[Iterable[Stats]] = multiStats
+		val scalMultiStats : Iterable[Iterable[Stats]] = multiStats.asScala.map(_.asScala)
 		val data = scalMultiStats.view.map(_.view.map(MathUtil.projStats(statsType)))
 		val xAxis = scalMultiStats.head.view.map(_.getPos: Double)
 		plotter.plotSeries(

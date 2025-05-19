@@ -1,5 +1,7 @@
 package com.bnd.network.business
 
+import com.bnd.core.runnable.ComposedStateProducer
+
 import java.util.List
 import com.bnd.network.BndNetworkException
 import com.bnd.network.domain.FixedNetworkWeightSetting
@@ -8,8 +10,8 @@ import com.bnd.network.domain.LayeredNetworkWeightSetting
 import com.bnd.network.domain.NetworkWeightSelection
 import com.bnd.network.domain.NetworkWeightSetting
 import com.bnd.network.domain.TemplateNetworkWeightSetting
-import com.bnd.core.runnable.ComposedStateProducer
-import scala.collection.JavaConversions._
+
+import scala.jdk.CollectionConverters._
 
 protected class ComposedNetworkWeightBuilder[T, S[X]] extends NetworkWeightBuilder[ComposedStateProducer[T, _, S], T] {
 
@@ -40,7 +42,7 @@ protected class ComposedNetworkWeightBuilder[T, S[X]] extends NetworkWeightBuild
 		fixedWeightSetting : FixedNetworkWeightSetting[B] 
 	) {
 		val settingOrder = fixedWeightSetting.getSettingOrder
-		val weightIterator : Iterator[T] = fixedWeightSetting.getWeights.iterator
+		val weightIterator : Iterator[T] = fixedWeightSetting.getWeights.iterator.asScala
 		val weightSelection = settingOrder match {
 				case FixedNetworkWeightSettingOrder.SimpleOrder =>  NetworkWeightSelection.All
 				case FixedNetworkWeightSettingOrder.ImmutableWithinLayerFirst => NetworkWeightSelection.ImmutableAndThenMutable

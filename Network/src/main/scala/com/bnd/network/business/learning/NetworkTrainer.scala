@@ -2,17 +2,16 @@ package com.bnd.network.business.learning
 
 import java.{lang => jl, util => ju}
 
-import com.bnd.core.runnable.StateEvent
+import com.bnd.core.runnable.{StateEvent, TimeRunnable}
 import com.bnd.math.BndMathException
 import com.bnd.math.business.learning.{IOStream, Trainer}
 import com.bnd.math.domain.learning.MachineLearningSetting
 import com.bnd.math.domain.learning.MachineLearningSetting.LearningRateAnnealingType
 import com.bnd.network.business.{NetworkRunnableFactory, WeightAccessible}
 import com.bnd.network.domain.{Network, NetworkSimulationConfig, TopologicalNode}
-import com.bnd.core.runnable.TimeRunnable
 import org.jblas.{DoubleMatrix, Eigen, Solve}
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.{Map => MMap}
 import scala.collection.mutable.Publisher
 
@@ -44,34 +43,28 @@ private class LinearRegressionNetworkTrainer(
   ) =
     outputComponentDesiredOutputErrorTuples.foreach {
       case (node, desiredOutput, error) =>
-        val inStates = node.getInNeighbors.map { case inNode => componentState(inNode, state)}
+        val inStates = node.getInNeighbors.asScala.map { case inNode => componentState(inNode, state)}
         val inStateDesiredOutputHistoryMatrixOption = nodeInStateDesiredOutputHistoryMatrixMap.get(node)
 
-        val (inStateMatrix, desiredOutputMatrix) = if (inStateDesiredOutputHistoryMatrixOption.isDefined)
-          (DoubleMatrix.concatVertically(inStateDesiredOutputHistoryMatrixOption.get._1, new DoubleMatrix(inStates).transpose),
-          DoubleMatrix.concatVertically(inStateDesiredOutputHistoryMatrixOption.get._2, new DoubleMatrix(List(desiredOutput))))
-        else
-          (new DoubleMatrix(inStates).transpose, new DoubleMatrix(List(desiredOutput)))
+        val (inStateMatrix, desiredOutputMatrix) = if (inStateDesiredOutputHistoryMatrixOption.isDefined) {
+          val inStateArray = inStates.map(_.doubleValue()).toArray
+          val desiredOutputArray = Array(desiredOutput.doubleValue())
+          
+          (DoubleMatrix.concatVertically(inStateDesiredOutputHistoryMatrixOption.get._1, new DoubleMatrix(inStateArray).transpose),
+           DoubleMatrix.concatVertically(inStateDesiredOutputHistoryMatrixOption.get._2, new DoubleMatrix(desiredOutputArray)))
+        } else {
+          val inStateArray = inStates.map(_.doubleValue()).toArray
+          val desiredOutputArray = Array(desiredOutput.doubleValue())
+          
+          (new DoubleMatrix(inStateArray).transpose, new DoubleMatrix(desiredOutputArray))
+        }
 
         nodeInStateDesiredOutputHistoryMatrixMap.update(node, (inStateMatrix, desiredOutputMatrix))
 
         if (weightAdaptationIterationNum.isEmpty || currentTrainingIteration > iterationNum - (weightAdaptationIterationNum.get + 1)) {
-//          val inStateTranspose = inStateMatrix.transpose()
-//          val pinv = Solve.pinv(inStateTranspose.mul(inStateMatrix))
-//          val pinvT = pinv.mul(inStateTranspose)
-//          val std = inStateTranspose.mmul(desiredOutputMatrix)
-//
-//          println("S        : " + inStateMatrix.rows + " " + inStateMatrix.columns)
-//          println("ST       : " + inStateTranspose.rows + " " + inStateTranspose.columns)
-//          println("(STS)-1  : " + pinv.rows + " " + pinv.columns)
-//          println("(STS)-1ST: " + pinvT.rows + " " + pinvT.columns)
-//          println("D        : " + desiredOutputMatrix.rows + " " + desiredOutputMatrix.columns)
-//          println("STD      : " + std.rows + " " + std.columns)
-//          val newWeights = pinv.mul(inStateTranspose).transpose().mmul(desiredOutputMatrix)
-
           val newWeights = Solve.solveLeastSquares(inStateMatrix, desiredOutputMatrix)
 
-          (node.getInNeighbors, newWeights.data).zipped.foreach { case (inNode, newWeight) =>
+          (node.getInNeighbors.asScala.toSeq, newWeights.data).zipped.foreach { case (inNode, newWeight) =>
             weightAccessor.setWeight(inNode, node, newWeight)
           }
         }
@@ -109,7 +102,7 @@ private class DeltaRuleNetworkTrainer(
       calcBackpropErrors(originalErrorMap, state)
 
     errorMap.foreach { case (node, error) =>
-      node.getInNeighbors.foreach { case inNode =>
+      node.getInNeighbors.asScala.foreach { case inNode =>
         val inState = componentState(inNode, state)
         // TODO: add derivation
         val newWeight = weightAccessor.getWeight(inNode, node).get + learningRate * inState * error
@@ -129,7 +122,7 @@ private class DeltaRuleNetworkTrainer(
 
     // auxiliary function calculating the backprop error for a given node
     def calcBackpropError(node: TopologicalNode) =
-      node.getOutNeighbors.map { outNode =>
+      node.getOutNeighbors.asScala.map { outNode =>
         val error = errorMap.get(outNode).getOrElse {
           throw new BndMathException("Node " + outNode + " has not been in handled while backpropagating the error. The topology is not layered!")
         }
@@ -140,14 +133,13 @@ private class DeltaRuleNetworkTrainer(
       }.sum
 
     while (!activeNodes.isEmpty)
-      activeNodes = activeNodes.map(_.getInNeighbors.map {
+      activeNodes = activeNodes.flatMap(_.getInNeighbors.asScala.flatMap {
         inNode =>
           if (!errorMap.contains(inNode) && !inNode.getInEdges.isEmpty) {
             errorMap(inNode) = calcBackpropError(inNode)
             Some(inNode)
           } else None
-        }.flatten
-      ).flatten
+      })
 
     errorMap.toMap
   }
@@ -180,8 +172,8 @@ private class DeltaRuleChemicalNetworkTrainer(
       calcBackpropErrors(originalErrorMap, state)
 
     errorMap.foreach { case (node, error) =>
-      val inStateSum = node.getInNeighbors.map(componentState(_, state): Double).sum
-      node.getInNeighbors.foreach { case inNode =>
+      val inStateSum = node.getInNeighbors.asScala.map(componentState(_, state): Double).sum
+      node.getInNeighbors.asScala.foreach { case inNode =>
         val inState = componentState(inNode, state)
         val newWeight = weightAccessor.getWeight(inNode, node).get + inState * error / (inStateSum * learningRate)
         weightAccessor.setWeight(inNode, node, if (newWeight < 0) 0d else newWeight)
@@ -284,9 +276,9 @@ object NetworkTrainer {
       trainingStream.inputStream)
 
     // normalize the weights for a given spectral radius
-    val reservoir = network.getTopology.getLayers.toSeq(1)
+    val reservoir = network.getTopology.getLayers.asScala.toSeq(1)
     val weightAccessor = networkRunnableWithWeightAccessible._2
-    normalizeWeights(reservoir.getAllNodes, weightAccessor, spectralRadius)
+    normalizeWeights(reservoir.getAllNodes.asScala, weightAccessor, spectralRadius)
 
     // create a trainer
     val networkTrainer = newLinearRegressionNetworkRunnableTrainer(
@@ -302,7 +294,7 @@ object NetworkTrainer {
   }
 
   def normalizeWeights(
-    nodes: Traversable[TopologicalNode],
+    nodes: Iterable[TopologicalNode],
     weightAccessor: WeightAccessible[jl.Double],
     spectralRadius: Double
   ) = {

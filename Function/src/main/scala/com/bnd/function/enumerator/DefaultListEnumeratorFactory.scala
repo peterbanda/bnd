@@ -1,0 +1,3 @@
+package com.bnd.function.enumerator
+
+object DefaultListEnumeratorFactory extends ListEnumeratorFactoryImpl

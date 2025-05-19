@@ -1,17 +1,17 @@
 package com.bnd.network.business
 
+import com.bnd.core.dynamics.StateAlternationType
+import com.bnd.core.runnable.{StateAlternation, StateAssignmentAlternation}
+
 import java.util.ArrayList
 import java.util.Collections
-
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.collection.Map
 import com.bnd.function.business.ScalaFunctionEvaluatorConversions._
 import com.bnd.function.evaluator.FunctionEvaluatorFactory
+
 import java.{lang => jl}
 import java.{util => ju}
-
-import com.bnd.core.runnable.StateAlternation
-import com.bnd.core.runnable.StateAssignmentAlternation
 import com.bnd.network.domain.NetworkActionSeries
 import com.bnd.network.domain.NetworkSimulationConfig
 import com.bnd.network.domain.NetworkAction
@@ -19,7 +19,6 @@ import com.bnd.network.domain.TopologicalNode
 import com.bnd.math.business.rand.RandomDistributionProviderFactory
 import com.bnd.network.BndNetworkException
 import com.bnd.network.domain.TopologicalNodeLocationComparator
-import com.bnd.core.dynamics.StateAlternationType
 
 class NetworkScriptFactory(private val funEvaluatorFactory : FunctionEvaluatorFactory) {
 
@@ -28,18 +27,21 @@ class NetworkScriptFactory(private val funEvaluatorFactory : FunctionEvaluatorFa
 	    actionSeries : NetworkActionSeries[T],
 	    components : Iterable[TopologicalNode]
 	) : Stream[StateAlternation[T, TopologicalNode, Nothing]]= {
-		val actions = new ArrayList[NetworkAction[T]](actionSeries.getActions)
-		Collections.sort(actions)
+//		implicit val scalaActionOrdering: Ordering[NetworkAction[_]] = new Ordering[NetworkAction[_]] {
+//			def compare(x: NetworkAction[_], y: NetworkAction[_]): Int = x.compareTo(y)
+//		}
 
-		// TODO: optimize this
-		val orderedComponents = new ju.ArrayList[TopologicalNode](components)
-		if (components.head.hasLocation)
-			Collections.sort(orderedComponents, new TopologicalNodeLocationComparator)
+		val actionSorted = actionSeries.getActions.asScala.toSeq.sorted
 
-		val initPart = toAlternations(simConfig, orderedComponents)(actions).toStream
+		implicit val scalaOrdering: Ordering[TopologicalNode] = (x: TopologicalNode, y: TopologicalNode) => new TopologicalNodeLocationComparator().compare(x, y)
+
+		val orderedComponentsAux = components.toSeq
+		val orderedComponents = if (components.head.hasLocation) orderedComponentsAux.sorted else orderedComponentsAux
+
+		val initPart = toAlternations(simConfig, orderedComponents)(actionSorted).toStream
 		val periodicPart = if (actionSeries.isPeriodic) {
 		    val periodicAlternators = repeat(
-		            toAlternationFactoryFuns(simConfig, orderedComponents)(actions.drop(actionSeries.getRepeatFromElementSafe)),
+		            toAlternationFactoryFuns(simConfig, orderedComponents)(actionSorted.drop(actionSeries.getRepeatFromElementSafe)),
 		            actionSeries.getPeriodicity().toDouble)
 		    if (actionSeries.hasRepetitions)
 		        periodicAlternators.takeWhile(_.applyStartTime < actionSeries.getRepetitions() * actionSeries.getPeriodicity())
@@ -88,7 +90,13 @@ class NetworkScriptFactory(private val funEvaluatorFactory : FunctionEvaluatorFa
 	        } else throw new BndNetworkException("States or random distribution expected for network script at time '" + startTime + ".")
   
 		action.getAlternationType match {
-	        case StateAlternationType.Replacement => new StateAssignmentAlternation(startTime, action.getTimeLength : Double, components zip newStates)
+	        case StateAlternationType.Replacement =>
+						{
+						import scala.jdk.CollectionConverters._
+						val pairs = components.zip(newStates.asScala).toSeq
+						new StateAssignmentAlternation(startTime, action.getTimeLength : Double, pairs)
+					}
+
 //			case StateAlternationType.Replacement => newReplacement[T, TopologicalNode, Nothing]
 //			case StateAlternationType.Addition => newDoubleAddition[T, TopologicalNode, Nothing]
 //			case StateAlternationType.Influx => StateAlternationRepeatFirstInflux[TopologicalNode, Nothing](

@@ -3,27 +3,18 @@ package com.bnd.network.business
 import java.util.Collections
 import java.{lang => jl, util => ju}
 
-import com.bnd.core.CollectionElementsConversions._
-import com.bnd.core.domain.MultiStateUpdateType
-import com.bnd.core.runnable.SeqIndexAccessible._
-import com.bnd.core.runnable.{ComponentStateCollector, ComposedStateProducer, FixedPointDetector, StrictFixedPointDetector}
-import com.bnd.core.util.{ConversionUtil, RandomUtil}
 import com.bnd.function.domain.{AbstractFunction, TransitionTable}
 import com.bnd.function.evaluator.FunctionEvaluatorFactory
 import com.bnd.function.{BndFunctionException, domain => fd}
 import com.bnd.network.business.ScalaNetworkTSMTest._
 import com.bnd.network.business.integrator.StatesWeightsIntegratorDef.StatesWeightsIntegrator
 import com.bnd.network.domain.{Network, NetworkFunction, NetworkSimulationConfig, SpatialTopology, TopologicalNode, TopologicalNodeLocationComparator, Topology}
-import com.bnd.core.domain.MultiStateUpdateType
-import com.bnd.core.metrics.MetricsType
-import com.bnd.core.runnable.TimeStateManager
-import com.bnd.core.util.{ConversionUtil, RandomUtil}
 import junit.framework.TestCase._
 import org.junit.{BeforeClass, FixMethodOrder, Test}
 import org.junit.runners.MethodSorters
 import org.springframework.beans.factory.annotation.Autowired
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.util.Random
 
 /**

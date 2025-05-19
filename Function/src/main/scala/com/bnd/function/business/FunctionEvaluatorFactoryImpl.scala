@@ -6,7 +6,7 @@ import java.util.Map
 import java.util.ArrayList
 import java.util.HashMap
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import com.bnd.core.ListKeyNode
 import com.bnd.core.BooleanArrayListKeyInnerNode
 import com.bnd.core.ScalaBooleanArrayListKeyInnerNode
@@ -89,8 +89,8 @@ private[bnd] class FunctionEvaluatorFactoryImpl(
 		} else {
 		    table = createTransitionTableMap(transitionTable.getRangeFrom())
 		    // map inputs to outputs in order
-		    val outputIterator : Iterator[OUT] = outputs.iterator()
-		    for (input <- inputs) {
+		    val outputIterator : Iterator[OUT] = outputs.iterator().asScala
+		    for (input <- inputs.asScala) {
 		    	table.put(input, outputIterator.next())
 		    }
 		}
@@ -122,7 +122,7 @@ private[bnd] class FunctionEvaluatorFactoryImpl(
 		new BooleanFunctionEvaluator() {
 
 			override def evaluate(inputs : JavaIterable[jl.Boolean]) : jl.Boolean = {
-				for (input <- inputs) {
+				for (input <- inputs.asScala) {
 					if (input == null || !input) {
 						false
 					}
@@ -135,7 +135,7 @@ private[bnd] class FunctionEvaluatorFactoryImpl(
 		new BooleanFunctionEvaluator() {
 
 			override def evaluate(inputs : JavaIterable[jl.Boolean]) : jl.Boolean = {
-				for (input <- inputs) {
+				for (input <- inputs.asScala) {
 					if (input != null && input) {
 						true
 					}
@@ -148,7 +148,7 @@ private[bnd] class FunctionEvaluatorFactoryImpl(
 		new BooleanFunctionEvaluator() {
 
 			override def evaluate(inputs : JavaIterable[jl.Boolean]) : jl.Boolean = {
-				for (input <- inputs) {
+				for (input <- inputs.asScala) {
 					if (input != null) {
 						!input
 					}
@@ -162,7 +162,7 @@ private[bnd] class FunctionEvaluatorFactoryImpl(
 
 			override def evaluate(inputs : JavaIterable[jl.Boolean]) : jl.Boolean = {
 				var firstValue : jl.Boolean = null
-				for (input <- inputs) {
+				for (input <- inputs.asScala) {
 					if (input != null) {
 						if (firstValue == null) {
 							firstValue = input
@@ -180,7 +180,7 @@ private[bnd] class FunctionEvaluatorFactoryImpl(
 
 			override def evaluate(inputs : JavaIterable[jl.Boolean]) : jl.Boolean = {
 				var parityFlag = true
-				for (input <- inputs) {
+				for (input <- inputs.asScala) {
 					if (input != null && input) {
 						parityFlag = !parityFlag
 					}

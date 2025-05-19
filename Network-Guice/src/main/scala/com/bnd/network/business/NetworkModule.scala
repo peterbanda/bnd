@@ -10,12 +10,12 @@ import com.bnd.math.business.learning.IOStreamFactory
 import com.bnd.network.business.function.{ActivationFunctionFactory, DoubleActivationFunctionFactory, JavaDoubleActivationFunctionFactory}
 import com.bnd.network.business.integrator.{DoubleConvertibleSWIntegratorFactory, MetaStatesWeightsIntegratorFactory, StatesWeightsIntegratorFactory}
 import com.bnd.network.metrics.{DoubleConvertibleMetricsFactory, DoubleMetricsFactory}
-import com.bnd.core.metrics.MetricsFactory
+import com.bnd.core.metrics.{MetricsFactory, MetricsType}
 import com.google.inject.name.Named
 import com.google.inject.{Provides, Singleton}
 import net.codingwell.scalaguice.ScalaModule
 
-import collection.JavaConversions.mapAsJavaMap
+import scala.jdk.CollectionConverters._
 
 /**
   * Guice network (Scala) module containing all the necessary components to create and run networks (including reservoirs)
@@ -198,9 +198,9 @@ class NetworkModule extends ScalaModule {
     new MetaNetworkRunnableFactoryImpl(
       functionEvaluatorFactory,
       topologyFactory,
-      mapAsJavaMap(map1),
-      mapAsJavaMap(map2),
-      mapAsJavaMap(map3)
+      map1.asJava,
+      map2.asJava,
+      map3.asJava
     )
   }
 

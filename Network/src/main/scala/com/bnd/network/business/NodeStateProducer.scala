@@ -1,14 +1,14 @@
 package com.bnd.network.business
 
+import com.bnd.core.runnable.{SingleStateProducer, ConstantTimeStepSingleStateProducer}
+
 import java.util.Collections
 import java.{util => ju}
-
-import com.bnd.core.runnable.{SingleStateProducer, ConstantTimeStepSingleStateProducer}
 import com.bnd.function.evaluator.FunctionEvaluator
 import com.bnd.network.business.integrator.StatesWeightsIntegratorDef._
 import com.bnd.network.domain.TopologicalNode
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 /**
  * @author © Peter Banda
@@ -18,7 +18,7 @@ protected abstract class NodeStateProducer[T: Manifest](
   topologicalNode: TopologicalNode
 ) extends ConstantTimeStepSingleStateProducer[T, TopologicalNode, ju.List](1d) with Serializable {
 
-  override def listInputComponentsInOrder = topologicalNode.getInNeighbors
+  override def listInputComponentsInOrder = topologicalNode.getInNeighbors.asScala
 
   override def outputComponent = topologicalNode
 
@@ -39,21 +39,21 @@ protected abstract class WeightNodeStateProducer[T: Manifest](
     weights
   }
 
-  val inNodeIndexMap = topologicalNode.getInNeighbors.zipWithIndex.toMap
+  val inNodeIndexMap = topologicalNode.getInNeighbors.asScala.zipWithIndex.toMap
 
   override def setWeights(weightIterator: ju.Iterator[T]) =
-    topologicalNode.getInEdges.zipWithIndex.foreach { case (edge, index) =>
+    topologicalNode.getInEdges.asScala.zipWithIndex.foreach { case (edge, index) =>
       inNodesWeights.set(index, weightIterator.next)
     }
 
   override def setMutableWeights(weightIterator: ju.Iterator[T]) =
-    topologicalNode.getInEdges.zipWithIndex.foreach { case (edge, index) =>
+    topologicalNode.getInEdges.asScala.zipWithIndex.foreach { case (edge, index) =>
       if (!edge.getStart.isBias)
         inNodesWeights.set(index, weightIterator.next)
     }
 
   override def setImmutableWeights(weightIterator: ju.Iterator[T]) =
-    topologicalNode.getInEdges.zipWithIndex.foreach { case (edge, index) =>
+    topologicalNode.getInEdges.asScala.zipWithIndex.foreach { case (edge, index) =>
       if (edge.getStart.isBias)
         inNodesWeights.set(index, weightIterator.next)
     }

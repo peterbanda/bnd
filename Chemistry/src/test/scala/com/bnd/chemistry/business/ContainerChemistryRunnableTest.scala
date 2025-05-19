@@ -5,20 +5,19 @@ import java.{lang => jl, util => ju}
 import com.bnd.chemistry.business.ChemistryTestDataGenerator._
 import com.bnd.chemistry.business.ContainerChemistryRunnableTest._
 import com.bnd.chemistry.domain._
-import com.bnd.core.DoubleConvertible.JavaDoubleAsDoubleConvertible
+import com.bnd.core.runnable._
+import com.bnd.core.util.FileUtil
+import SeqIndexAccessible.ArraySeqIndexAccessible
+import com.bnd.core.dynamics.StateAlternationType
 import com.bnd.plotter.Plotter
-import com.bnd.core.runnable.SeqIndexAccessible._
-import com.bnd.core.runnable.{DistanceFixedPointDetector, FixedPointDetector, StateCollector}
-import com.bnd.core.util.{FileUtil, RandomUtil}
+import com.bnd.core.util.RandomUtil
 import com.bnd.function.domain.ODESolverType
 import com.bnd.plotter.{Plotter, SeriesPlotSetting}
-import com.bnd.core.dynamics.StateAlternationType
-import com.bnd.core.util.{FileUtil, RandomUtil}
 import org.junit.Assert._
 import org.junit.runners.MethodSorters
 import org.junit.{BeforeClass, FixMethodOrder, Test}
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.util.Random
 
 object ContainerChemistryRunnableTest {
@@ -49,7 +48,7 @@ object ContainerChemistryRunnableTest {
     var emptyActionSeries: AcInteractionSeries = _
 
     def sortSpecies(compartment: AcCompartment) =
-        (compartment.getSpeciesSet().getVariables(): Iterable[AcSpecies]).toList.sortBy(_.getVariableIndex())
+        compartment.getSpeciesSet().getVariables().asScala.toSeq.sortBy(_.getVariableIndex())
 
     @BeforeClass
     def initialize {
@@ -64,7 +63,8 @@ object ContainerChemistryRunnableTest {
     }
 
     def initActionSeries = {
-        val subCompartments = (compartment.getSubCompartments: Iterable[AcCompartment]).toSeq
+        val subCompartments = compartment.getSubCompartments.asScala.toSeq
+
         actionSeries = createActionSeries(compartment)
         val subActionSeries1 = createActionSeries(subCompartments(0))
         val subActionSeries2 = createActionSeries(subCompartments(1))
@@ -86,12 +86,15 @@ object ContainerChemistryRunnableTest {
             println(time)
 
             val effectedSpecies = RandomUtil.nextElementsWithRepetitions(compartment.getSpecies(), 2)
-            effectedSpecies.foreach { s =>
+            effectedSpecies.asScala.foreach { s =>
                 {
                     val speciesAction = new AcSpeciesInteraction
                     action.addToSpeciesActions(speciesAction)
                     speciesAction.setSpecies(s)
-                    acUtil.setSettingFunctionFromString("0.1 + " + compartment.getSpecies().head.getLabel(), speciesAction)
+                    acUtil.setSettingFunctionFromString(
+                        "0.1 + " + compartment.getSpecies().asScala.head.getLabel(),
+                        speciesAction
+                    )
                 }
             }
             time += RandomUtil.nextInt(50)
@@ -135,7 +138,7 @@ object ContainerChemistryRunnableTest {
 
     val parentReactionSet = {
         val speciesSet = createSpeciesSetWithPrefix(parentSpeciesNum, "P")
-        val selectedSpecies: Seq[AcSpecies] = new ju.ArrayList[AcSpecies](RandomUtil.nextElementsWithRepetitions(speciesSet.getVariables(), 4))
+        val selectedSpecies: Seq[AcSpecies] = RandomUtil.nextElementsWithRepetitions(speciesSet.getVariables(), 4).asScala.toSeq
 
         val reactionSet = new AcReactionSet
         reactionSet setSpeciesSet (speciesSet)
@@ -146,7 +149,7 @@ object ContainerChemistryRunnableTest {
 
     def childReactionSet(prefix: String) = {
         val speciesSet = createSpeciesSetWithPrefix(childSpeciesNum, prefix)
-        val selectedSpecies = new ju.ArrayList[AcSpecies](speciesSet.getVariables): Seq[AcSpecies]
+        val selectedSpecies = speciesSet.getVariables.asScala.toSeq
 
         val reactionSet = new AcReactionSet
         reactionSet setSpeciesSet (speciesSet)
@@ -309,7 +312,7 @@ class ContainerChemistryRunnableTest extends ScalaChemistryTest {
         } else List.empty[(AcCompartment, StateCollector[jl.Double, Array])]
 
         val initialState = for (i <- 1 to containerChemistry.getStates.size) yield Random.nextDouble: jl.Double
-        containerChemistry.setStates(initialState)
+        containerChemistry.setStates(initialState.asJava)
 
         containerChemistry.runFor(time)
 
@@ -367,7 +370,7 @@ class ContainerChemistryRunnableTest extends ScalaChemistryTest {
                 }
             }
 
-        containerChemistry.setStates(initialState)
+        containerChemistry.setStates(initialState.asJava)
         containerChemistry.runFor(time)
 
         compartmentStateCollectors
@@ -385,7 +388,7 @@ class ContainerChemistryRunnableTest extends ScalaChemistryTest {
         	    chemistryRunnableFactory.createInteractiveWithPublishers(compartment, acSimConfig, actionSeries.get, None)
         else {
         	val chem = chemistryRunnableFactory.createNonInteractiveWithPublishers(compartment, acSimConfig, None)
-        	chem._1.setStates(initialState)
+        	chem._1.setStates(initialState.asJava)
         	chem
         }
 

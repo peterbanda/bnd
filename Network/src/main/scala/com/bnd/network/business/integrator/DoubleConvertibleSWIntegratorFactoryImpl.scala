@@ -3,10 +3,9 @@ package com.bnd.network.business.integrator
 import java.util.Collection
 import java.{lang => jl, util => ju}
 
-import com.bnd.core.converter.ConverterFactory
+import com.bnd.core.converter.{Converter, ConverterFactory}
 import com.bnd.network.domain.StatesWeightsIntegratorType
 import StatesWeightsIntegratorDef.StatesWeightsIntegrator
-import com.bnd.core.converter.{Converter, ConverterFactory}
 
 /**
  * @author © Peter Banda

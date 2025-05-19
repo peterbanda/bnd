@@ -1,12 +1,9 @@
 package com.bnd.math.business.dynamics
 
-import com.bnd.core.runnable.StateAccessible
 import com.bnd.math.business.dynamics.IteratedMap._
 import com.bnd.plotter.{Plotter, SeriesPlotSetting}
-import com.bnd.core.runnable.TimeRunnable
+import com.bnd.core.runnable.{ TimeRunnable, StateAccessible }
 import org.junit.{Ignore, Test}
-
-import scala.math.Numeric.DoubleAsIfIntegral
 
 class LyapunovAnalysisTest {
 
@@ -16,9 +13,11 @@ class LyapunovAnalysisTest {
     val iterations = 10000
   }
 
-  // TODO: this is supposed to be provided automatically
-  implicit val doubleAsIntegral = DoubleAsIfIntegral
-  private val lyapunovAnalysis = new LyapunovAnalysis[Double](Defaults.perturbationStrength, new EuclideanVectorSpace[Double])
+  private val lyapunovAnalysis = new LyapunovAnalysis[Double](
+    Defaults.perturbationStrength,
+    new EuclideanVectorSpace[Double]
+  )
+
   private val plotter = Plotter.apply
 
   @Test

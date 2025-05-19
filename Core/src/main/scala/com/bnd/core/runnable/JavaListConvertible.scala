@@ -1,7 +1,7 @@
 package com.bnd.core.runnable
 
 import java.{util => ju}
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import com.bnd.core.CollectionElementsConversions._
 
 object JavaListConvertible {
@@ -28,5 +28,5 @@ trait JavaListJavaListConvertible extends JavaListConvertible[ju.List] {
 
 trait ArrayJavaListConvertible extends JavaListConvertible[Array] {
   override def toJavaList[T](a : Array[T]) = arrayToJavaList(a)
-  override def fromJavaList[T  : Manifest](a : ju.List[T]) = (a : Seq[T]).toArray
+  override def fromJavaList[T  : Manifest](a : ju.List[T]) = a.toSeq.toArray
 }

@@ -1,6 +1,5 @@
 package com.bnd.core
 
-import com.bnd.core.BndRuntimeException
 import com.bnd.core.util.ConversionUtil
 
 object NumericConversions {

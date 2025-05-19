@@ -1,7 +1,7 @@
 package com.bnd.core
 
 import com.bnd.core.CollectionElementsConversions._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import com.bnd.core.DoubleConvertible.Implicits.toDouble
 import scala.collection.mutable.ListBuffer
 
@@ -56,6 +56,6 @@ object XYExtractorUtil {
 		slots.zipWithIndex.map { case (slot,index) =>
 			val slotValue = minX + (index * slotSize)
 			(slotValue, compress(slotValue, slot))
-		}
+		}.toSeq
 	}
 }

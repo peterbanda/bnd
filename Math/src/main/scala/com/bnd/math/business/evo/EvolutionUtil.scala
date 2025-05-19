@@ -4,7 +4,7 @@ import java.{lang => jl}
 import com.bnd.math.domain.evo.Chromosome
 import com.bnd.math.domain.evo.Population
 import com.bnd.math.BndMathException
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import com.bnd.math.business.MathUtil._
 
 object EvolutionUtil {
@@ -49,7 +49,7 @@ object EvolutionUtil {
 		if (population.getMeanScore != null)
 			population.getMeanScore
 		else if (population.hasChromosomes)
-			calcMean(population.getChromosomes.map(_.getScore))
+			calcMean(population.getChromosomes.asScala.map(_.getScore))
 		else
 			throw new BndMathException("No chromosomes nor scores defined but expected for population '" + population.getId + "'.")
 
@@ -57,15 +57,18 @@ object EvolutionUtil {
 		if (population.getMeanFitness != null)
 			population.getMeanFitness
 		else if (population.hasChromosomes)
-		    if (population.getChromosomes.head.getFitness == null)
+		    if (population.getChromosomes.asScala.head.getFitness == null)
 		        null
 		    else
-		    	calcMean(population.getChromosomes.map(_.getFitness))
+		    	calcMean(population.getChromosomes.asScala.map(_.getFitness))
 		else
 			throw new BndMathException("No chromosomes nor scores defined but expected for population '" + population.getId + "'.")
 
-	private def min(population : Population[_], proj : Chromosome[_] => jl.Double) = proj(population.getChromosomes.minBy(proj(_)))
-	private def max(population : Population[_], proj : Chromosome[_] => jl.Double) = proj(population.getChromosomes.maxBy(proj(_)))
+	private def min(population : Population[_], proj : Chromosome[_] => jl.Double) =
+		proj(population.getChromosomes.asScala.minBy(proj(_)))
+
+	private def max(population : Population[_], proj : Chromosome[_] => jl.Double) =
+		proj(population.getChromosomes.asScala.maxBy(proj(_)))
 
 	private def bestScore(population : Population[_]) = {
 	    val maxFlag = population.getEvolutionRun.getEvoTask.getGaSetting.isMaxValueFlag
@@ -77,7 +80,7 @@ object EvolutionUtil {
 	}
 
 	private def bestFitness(population : Population[_]) =
-	    if (population.getChromosomes.head.getFitness == null)
+	    if (population.getChromosomes.asScala.head.getFitness == null)
 	        null
 	    else {
 	    	val maxFlag = population.getEvolutionRun.getEvoTask.getGaSetting.isMaxValueFlag
@@ -98,7 +101,7 @@ object EvolutionUtil {
 	}
 
 	private def worstFitness(population : Population[_]) =
-		if (population.getChromosomes.head.getFitness == null)
+		if (population.getChromosomes.asScala.head.getFitness == null)
 	        null
 	    else {
 	    	val maxFlag = population.getEvolutionRun.getEvoTask.getGaSetting.isMaxValueFlag

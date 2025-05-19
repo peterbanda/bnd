@@ -1,6 +1,5 @@
 package com.bnd.network.business
 
-import com.bnd.core.test.Spring4Test
 import org.junit.runner.RunWith
 import org.springframework.test.context.ContextConfiguration
 import junit.framework.TestCase

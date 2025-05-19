@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import com.bnd.function.domain.Expression
 import com.bnd.math.business.MathTest
 import com.bnd.math.domain.rand.{RandomDistribution, UniformDiscreteDistribution, UniformDistribution}
+import com.bnd.core.util.FileUtil
 import java.{lang => jl}
 
 import com.bnd.function.{domain => fd}
-import com.bnd.core.util.FileUtil
 import junit.framework.Assert._
 
 class IOStreamFactoryTest extends MathTest {

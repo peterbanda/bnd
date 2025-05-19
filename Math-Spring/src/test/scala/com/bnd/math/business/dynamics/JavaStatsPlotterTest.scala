@@ -1,9 +1,9 @@
 package com.bnd.math.business.dynamics
 
-import com.bnd.core.CollectionElementsConversions._
 import com.bnd.math.domain.{Stats, StatsType}
 import com.bnd.plotter.Plotter
 import org.junit.Test
+import scala.jdk.CollectionConverters._
 
 class JavaStatsPlotterTest {
 
@@ -22,6 +22,10 @@ class JavaStatsPlotterTest {
       new Stats{setPos(0.2D); setMean(0.46); setMin(0.081); setMax(0.676)}
     ))
 
-    plotter.plotStats(data, StatsType.Mean, "Test", "X", "Y", null, null)
+    plotter.plotStats(
+      data.map(_.asJava).asJava,
+      StatsType.Mean,
+      "Test", "X", "Y", null, null
+    )
   }
 }

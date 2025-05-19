@@ -6,7 +6,7 @@ import scala.collection.mutable.{Map => MMap}
 import scala.collection.Map
 import scala.math.Numeric
 import scala.math.Numeric.Implicits._
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import com.bnd.core.CollectionElementsConversions._
 import java.{lang => jl}
 

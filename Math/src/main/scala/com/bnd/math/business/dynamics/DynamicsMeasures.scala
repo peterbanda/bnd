@@ -1,14 +1,13 @@
 package com.bnd.math.business.dynamics
 
 import scala.Array._
-import scala.collection.JavaConversions._
-import scala.collection.mutable.ListBuffer
 import scala.collection._
 import scala.math.Integral.Implicits._
 import scala.math.Numeric._
 import scala.math._
 import com.bnd.core.CollectionElementsConversions._
 import com.bnd.core.metrics.Metrics
+import scala.jdk.CollectionConverters.SeqHasAsJava
 
 object DynamicsMeasures {
 
@@ -33,7 +32,10 @@ object DynamicsMeasures {
 	    firstTrajectory : Iterable[Seq[T]],
 	    secondTrajectory : Iterable[Seq[T]],
 	    metrics : Metrics[T]
-	) : Double = {
-	    calcLyapunovExponent(firstTrajectory, secondTrajectory, metrics.calcDistance(_:Seq[T],_:Seq[T]))
-	}
+	) : Double =
+	    calcLyapunovExponent(
+				firstTrajectory,
+				secondTrajectory,
+				(a: Seq[T], b: Seq[T]) => metrics.calcDistance(a.asJava, b.asJava)
+			)
 }

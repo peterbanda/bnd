@@ -27,7 +27,8 @@ class ComponentStateCollector[T, C, S[X]](implicit c : Copyable[S]) extends Subs
 	    	case _ =>
 		}
 
-	def collected : Seq[(BigDecimal, S[T])] = timeStates
+	// TODO: originally Seq[..] was here
+	def collected : ListBuffer[(BigDecimal, S[T])] = timeStates
 
 	def components = components_.get
 }

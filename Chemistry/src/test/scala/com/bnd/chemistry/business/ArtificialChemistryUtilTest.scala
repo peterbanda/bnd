@@ -6,7 +6,7 @@ import com.bnd.chemistry.domain._
 import org.junit.runners.MethodSorters
 import org.junit.{FixMethodOrder, Test}
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ArtificialChemistryUtilTest extends ScalaChemistryTest {
@@ -30,7 +30,7 @@ class ArtificialChemistryUtilTest extends ScalaChemistryTest {
 
     acUtil.setSpeciesAssociationsFromString(reactantsString, AcSpeciesAssociationType.Reactant, reaction)
 
-    reaction.getSpeciesAssociations().foreach{ assoc =>
+    reaction.getSpeciesAssociations().asScala.foreach { assoc =>
       println(assoc.getStoichiometricFactor + " " + assoc.getSpeciesLabel)
     }
   }

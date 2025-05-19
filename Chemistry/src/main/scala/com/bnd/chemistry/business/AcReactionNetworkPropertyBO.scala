@@ -1,6 +1,6 @@
 package com.bnd.chemistry.business
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import com.bnd.chemistry.domain.AcReactionSet
 import com.bnd.chemistry.domain.AcReaction
 import com.bnd.chemistry.domain.AcSpecies
@@ -19,7 +19,7 @@ class AcReactionNetworkPropertyBO(val reactionSet : AcReactionSet) {
         MathUtil.calcStats(0,  calcSpeciesConnectivities(assocType))
 
     def calcSpeciesConnectivities(assocType : AcSpeciesAssociationType) : Iterable[Double] =
-        species.map(calcSpeciesConnectivity(assocType))
+        species.asScala.map(calcSpeciesConnectivity(assocType)(_))
 
 	def calcSpeciesConnectivity(assocType : AcSpeciesAssociationType)(species : AcSpecies) : Double = {
 	    val stoichiometries = doWithReactionsAndMerge((_ : Iterable[Double]).sum)(assocType, {
@@ -29,10 +29,10 @@ class AcReactionNetworkPropertyBO(val reactionSet : AcReactionSet) {
 	}
 
 	private def doWithReactions[T](action : AcReaction => T) =
-	    reactionSet.getReactions().view.map(action)
+	    reactionSet.getReactions().asScala.view.map(action)
 
 	private def doWithReactionsForType[T](asocType : AcSpeciesAssociationType)(action : AcSpeciesReactionAssociation => T) = 
-	    doWithReactions { _.getSpeciesAssociations(asocType).view.map(action) }
+	    doWithReactions { reaction => reaction.getSpeciesAssociations(asocType).asScala.view.map(action) }
 
 	private def doWithReactionsAndMerge[T](merge : Iterable[T] => T) = 
 	    doWithReactionsForType(_ : AcSpeciesAssociationType)(_ : AcSpeciesReactionAssociation => T).view.map(merge)

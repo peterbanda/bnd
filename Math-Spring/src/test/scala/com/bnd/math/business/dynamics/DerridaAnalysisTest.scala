@@ -1,12 +1,10 @@
 package com.bnd.math.business.dynamics
 
-import com.bnd.core.runnable.StateAccessible
 import com.bnd.math.business.dynamics.IteratedMap._
+import com.bnd.core.runnable.{ TimeRunnable, StateAccessible }
 import com.bnd.plotter.Plotter
-import com.bnd.core.runnable.TimeRunnable
 import org.junit.Test
 
-import scala.math.Numeric.DoubleAsIfIntegral
 import scala.util.Random
 
 class DerridaAnalysisTest {
@@ -16,8 +14,6 @@ class DerridaAnalysisTest {
     val repetitions = 1000
   }
 
-  // TODO: this is supposed to be provided automatically
-  implicit val doubleAsIntegral = DoubleAsIfIntegral
   val plotter = Plotter.apply
   val derridaAnalysis = new DerridaAnalysis[Double](
     Defaults.perturbationStrength,

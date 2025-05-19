@@ -11,7 +11,7 @@ import com.bnd.function.domain.ODESolverType
 import com.bnd.core.dynamics.{ODESolver, StateAlternationType}
 import com.bnd.core.util.ConversionUtil
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class NumberStateAlternator[T <: Number, C](
   alternationType: StateAlternationType,
@@ -51,6 +51,6 @@ class NumberStateAlternator[T <: Number, C](
     val diffSeq = diffs.map {
       ConversionUtil.convert(_, clazz)
     }: Seq[T]
-    addToStates(diffSeq)
+    addToStates(diffSeq.asJava)
   }
 }

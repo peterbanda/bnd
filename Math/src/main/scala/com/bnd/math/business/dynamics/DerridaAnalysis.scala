@@ -1,8 +1,7 @@
 package com.bnd.math.business.dynamics
 
 import java.{util => ju}
-
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import com.bnd.core.CollectionElementsConversions._
 
 import scala.math.Numeric._
@@ -16,10 +15,14 @@ import com.bnd.core.runnable.StateAccessible
 import com.bnd.core.runnable.TimeRunnable
 import com.bnd.core.util.RandomUtil
 
-class DerridaAnalysis[T : Integral](
+import scala.math.Fractional.Implicits.infixFractionalOps
+
+class DerridaAnalysis[T : Fractional](
     perturbationStrength : T,
     val vectorSpace : VectorSpace[T],
-    val random : (T, T) => T) extends PerturbationAnalysis[T](perturbationStrength){
+    val random : (T, T) => T) extends PerturbationAnalysis[T](perturbationStrength) {
+
+    private val num = implicitly[Fractional[T]]
 
     def run(
         runnable : TimeRunnable with StateAccessible[T], 
@@ -27,7 +30,6 @@ class DerridaAnalysis[T : Integral](
         timeStepLength : Double, 
         repetitions : Int) : Iterable[Iterable[T]] = {
 
-        val num = implicitly[Integral[T]]
         val maxPoint = perturbate(point, Seq.fill(point.size){num.one})
 
         analyze(runnable, point, maxPoint, timeStepLength, repetitions)
@@ -40,16 +42,14 @@ class DerridaAnalysis[T : Integral](
         timeStepLength : Double,
         repetitions : Int) : Iterable[Iterable[T]] = {
 
-        val num = implicitly[Integral[T]]
-
         // function to set states, run, and getStates
         def run(states : Seq[T]) : Seq[T] = {
             synchronized {
-            	runnable.setStates(states)
+            	runnable.setStates(states.asJava)
             	runnable.runFor(timeStepLength)
             	runnable.getStates()
             }
-        }
+        }.asScala.toSeq
 
         val dims = minPoint.size
         var maxDistance = calcDistance(minPoint, maxPoint)
@@ -68,7 +68,7 @@ class DerridaAnalysis[T : Integral](
             List(distance1, distance2)
         }
         // normalize
-        val normalizedDistances = distances.view map (_.view map (_/maxDistance))
+        val normalizedDistances = distances.view map (_.view map (_ / maxDistance))
 //        normalizedDistances map (list => List(list(0), list(1) / list(0)))
         normalizedDistances
     }

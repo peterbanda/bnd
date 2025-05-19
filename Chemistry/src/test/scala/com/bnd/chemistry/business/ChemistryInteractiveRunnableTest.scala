@@ -5,23 +5,18 @@ import java.{lang => jl, util => ju}
 import com.bnd.chemistry.business.ChemistryTestDataGenerator._
 import com.bnd.chemistry.business.ChemistryInteractiveRunnableTest._
 import com.bnd.chemistry.domain.{AcInteraction, AcInteractionSeries, AcSpecies, AcSpeciesInteraction, AcSymmetricSpec, _}
-import com.bnd.core.CollectionElementsConversions._
-import com.bnd.core.DoubleConvertible.JavaDoubleAsDoubleConvertible
 import com.bnd.plotter.Plotter
-import com.bnd.core.runnable.SeqIndexAccessible._
-import com.bnd.core.runnable._
-import com.bnd.core.util.RandomUtil
 import com.bnd.function.domain.ODESolverType
 import com.bnd.math.domain.rand.RandomDistribution
 import com.bnd.plotter.{Plotter, SeriesPlotSetting}
-import com.bnd.core.dynamics.StateAlternationType
-import com.bnd.core.runnable.TimeStateManager
-import com.bnd.core.util.RandomUtil
+import com.bnd.core.runnable.SeqIndexAccessible.ArraySeqIndexAccessible
 import org.junit.Assert._
 import org.junit.runners.MethodSorters
 import org.junit.{BeforeClass, FixMethodOrder, Test}
-
-import scala.collection.JavaConversions._
+import com.bnd.core.runnable._
+import com.bnd.core.dynamics.StateAlternationType
+import com.bnd.core.util.RandomUtil
+import scala.jdk.CollectionConverters._
 import scala.collection.Map
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -81,7 +76,7 @@ object ChemistryInteractiveRunnableTest {
       actionSeries.setPeriodicity(400)
       actionSeries.setRepeatFromElement(1)
 
-      val species = new ju.ArrayList(compartment.getSpecies): Seq[AcSpecies]
+      val species: Seq[AcSpecies] = compartment.getSpecies.asScala.toSeq
 
       val variable1 = new AcInteractionVariable() {
         setLabel("XX")
@@ -113,13 +108,17 @@ object ChemistryInteractiveRunnableTest {
         }
 
         val effectedSpecies = RandomUtil.nextElementsWithRepetitions(compartment.getSpecies(), 2)
-        effectedSpecies.foreach { s => {
+
+        effectedSpecies.asScala.foreach { s => {
           val speciesAction = new AcSpeciesInteraction
           action.addToSpeciesActions(speciesAction)
           speciesAction.setSpecies(s)
-          acUtil.setSettingFunctionFromString("0.1 + " + compartment.getSpecies.head.getLabel + " + " + variable1.getLabel, speciesAction)
-        }
-        }
+          acUtil.setSettingFunctionFromString(
+            "0.1 + " + compartment.getSpecies.asScala.head.getLabel + " + " + variable1.getLabel,
+            speciesAction
+          )
+        }}
+
         time += 1 + RandomUtil.nextInt(50)
       }
       actionSeries
@@ -129,17 +128,17 @@ object ChemistryInteractiveRunnableTest {
       var time = -100
       (for (_ <- 1 to 4) yield {
         time += 100
-        val species = new ju.ArrayList(compartment.getSpecies): Seq[AcSpecies]
+        val species = compartment.getSpecies.asScala.toSeq
         val items = for (i <- 0 to 1) yield
           new RangeStateInterpretationItem[jl.Double, AcSpecies, AcTranslationVariable](
             new AcTranslationVariable() {
               setLabel(species(i).getLabel)
             },
-            List(species(i)), { (speciesStateMap: Map[AcSpecies, Seq[jl.Double]], sadas: Map[AcTranslationVariable, jl.Double]) => {
+            List(species(i)), { (speciesStateMap: Map[AcSpecies, ListBuffer[jl.Double]], _: Map[AcTranslationVariable, jl.Double]) => {
               val states = speciesStateMap.get(species(i)).get
               (states.foldLeft(0d)(_ + _) / states.size): jl.Double
             }
-            })
+        })
         new RangeStateInterpretation(time, 50, items)
       }).toStream
     }
@@ -156,7 +155,7 @@ object ChemistryInteractiveRunnableTest {
         rangeTranslation.setFromTime(time)
         rangeTranslation.setToTime(time + 100)
 
-        compartment.getSpecies.foreach { s => {
+        compartment.getSpecies.asScala.foreach { s => {
           val translationItem = new AcTranslationItem
           rangeTranslation.addTranslationItem(translationItem)
           translationItem.setVariable(new AcTranslationVariable {
@@ -192,15 +191,15 @@ class ChemistryInteractiveRunnableTest extends ScalaChemistryTest {
   def test2NoActions {
     val compartment = compartments.head
     val as = actionSeries.head
-    val initialState = initialStates.head: Seq[jl.Double]
+    val initialState = initialStates.head.map(new jl.Double(_)): Seq[jl.Double]
     val asNoActions = new AcInteractionSeries {
       setSpeciesSet(compartment.getSpeciesSet())
     }
 
     val chemistryStates = getStatesNew(compartment, initialState, None)
     val chemistryScriptedPlainStates = getStatesNew(compartment, initialState, Some(asNoActions))
-    assertNotEmpty(chemistryStates)
-    assertNotEmpty(chemistryScriptedPlainStates)
+    assertNotEmpty(chemistryStates.asJava)
+    assertNotEmpty(chemistryScriptedPlainStates.asJava)
 
     (chemistryStates.map(_._2).flatten, chemistryScriptedPlainStates.map(_._2).flatten).zipped.map(assertEquals(_, _, 0.00000000001))
   }
@@ -208,7 +207,7 @@ class ChemistryInteractiveRunnableTest extends ScalaChemistryTest {
   @Test
   def test3NoActions {
     val compartment = compartments.head
-    val initialState = initialStates.head: Seq[jl.Double]
+    val initialState = initialStates.head.map(new jl.Double(_)): Seq[jl.Double]
     val asNoActions = new AcInteractionSeries {
       setSpeciesSet(compartment.getSpeciesSet)
     }
@@ -216,7 +215,7 @@ class ChemistryInteractiveRunnableTest extends ScalaChemistryTest {
     val chemistryScriptedPlainStates = getStatesNew(compartment, initialState, Some(asNoActions))
     //	   	val chemistryOldNoActions = getStatesOld(compartment, ac.getSimulationConfig, initialState)
 
-    assertNotEmpty(chemistryScriptedPlainStates)
+    assertNotEmpty(chemistryScriptedPlainStates.asJava)
     //        assertNotEmpty(chemistryOldNoActions)
 
     //	   	(chemistryScriptedPlainStates.map(_._2).flatten, chemistryOldNoActions.map(_._2).flatten).zipped.map(assertEquals(_,_,0.00000000001))
@@ -226,12 +225,12 @@ class ChemistryInteractiveRunnableTest extends ScalaChemistryTest {
   def test5Correctness {
     val compartment = compartments.head
     val as = actionSeries.head
-    val initialState = initialStates.head: Seq[jl.Double]
+    val initialState = initialStates.head.map(new jl.Double(_)): Seq[jl.Double]
 
     val chemistryNewStates = getStatesNew(compartment, initialState, Some(as))
     //    	val chemistryOldStates = getStatesOld(compartment, ac.getSimulationConfig, initialState, as)
 
-    assertNotEmpty(chemistryNewStates)
+    assertNotEmpty(chemistryNewStates.asJava)
     //	   	assertNotEmpty(chemistryOldStates)
 
     if (displayPlot) {
@@ -259,18 +258,23 @@ class ChemistryInteractiveRunnableTest extends ScalaChemistryTest {
   def runChemistryForAll(
     fixedPointDetector: Option[FixedPointDetector[jl.Double]] = None,
     collectStates: Boolean = false
-  ) = (compartments, actionSeries, initialStates).zipped.foreach(runChemistry(_, _, _)(fixedPointDetector, collectStates))
+  ) = (compartments, actionSeries, initialStates).zipped.foreach {
+    (comp, actions, states) => 
+    runChemistry(comp, actions, states.map(d => new jl.Double(d)))(fixedPointDetector, collectStates)
+  }
 
   def runChemistryForAllWithInterpretations(
     fixedPointDetector: Option[FixedPointDetector[jl.Double]] = None
   ) = ((compartments, actionSeries, interpretations).zipped, initialStates).zipped.foreach { (a, a4) =>
-    runChemistryWithInterpretations(a._1, a._2, a._3, a4)(fixedPointDetector)
+    runChemistryWithInterpretations(a._1, a._2, a._3, a4.map(d => new jl.Double(d)))(fixedPointDetector)
   }
 
   def runChemistryForAllWithTranslationSeries(
     fixedPointDetector: Option[FixedPointDetector[jl.Double]] = None
   ) = ((compartments, actionSeries, translationSeries).zipped, initialStates).zipped.foreach { (a, a4) =>
-    runChemistryWithTranslationSeries(a._1, a._2, a._3, a4)(fixedPointDetector)
+    runChemistryWithTranslationSeries(
+      a._1, a._2, a._3, a4.map(new jl.Double(_))
+    )(fixedPointDetector)
   }
 
   def getStatesNew(
@@ -288,7 +292,7 @@ class ChemistryInteractiveRunnableTest extends ScalaChemistryTest {
     val timeStateCollector = new StateCollector[jl.Double, Array]
     chemistrySystem.subscribe(timeStateCollector)
 
-    chemistrySystem.setStates(initialState)
+    chemistrySystem.setStates(initialState.asJava)
     chemistrySystem.runFor(time)
 
     timeStateCollector.collected
@@ -309,7 +313,7 @@ class ChemistryInteractiveRunnableTest extends ScalaChemistryTest {
     if (collectStates || displayPlot) {
       system.subscribe(timeStateCollector)
     }
-    system.setStates(initialState)
+    system.setStates(initialState.asJava)
     system.runFor(time)
     if (displayPlot) {
       val plotSetting = new SeriesPlotSetting()
@@ -344,7 +348,7 @@ class ChemistryInteractiveRunnableTest extends ScalaChemistryTest {
     var timeStateCollector = new StateCollector[jl.Double, Array]
     system.subscribe(timeStateCollector)
 
-    system.setStates(initialState)
+    system.setStates(initialState.asJava)
     interpreter.runFor(time)
     if (displayPlot) {
       val plotSetting = new SeriesPlotSetting()

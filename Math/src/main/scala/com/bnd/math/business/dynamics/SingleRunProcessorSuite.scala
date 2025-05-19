@@ -2,7 +2,7 @@ package com.bnd.math.business.dynamics
 
 import java.{util => ju}
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.math.Numeric._
 import scala.math.Integral.Implicits._
 import scala.math._
@@ -23,9 +23,9 @@ abstract class SingleRunProcessorSuite[T,O](val processors : Iterable[SingleRunP
         }
 
         // state initial state
-        runnable.setStates(initialState)
+        runnable.setStates(initialState.asJava)
 
-        val statesHistory = for (i <- 1 to iterations) yield nextStates : Iterable[T]
+        val statesHistory = for (i <- 1 to iterations) yield nextStates.asScala : Iterable[T]
         val statesHistoryTransposed = statesHistory.transpose
         createResult(for (processor <- processors) yield {
             if (processor.isTransposedStatesHistoryExpected)

@@ -1,23 +1,23 @@
 package com.bnd.math.business.dynamics
 
-import scala.collection.JavaConversions.asScalaBuffer
-import scala.collection.JavaConversions.seqAsJavaList
+import scala.jdk.CollectionConverters._
 import scala.math.Integral
 import scala.math.Integral.Implicits.infixIntegralOps
 import scala.math.log
 import com.bnd.core.DoubleConvertible
+import com.bnd.core.DoubleConvertible.Implicits.toDouble
 import com.bnd.core.runnable.StateAccessible
 import com.bnd.core.runnable.TimeRunnable
 
-class LyapunovAnalysis[T : Integral : DoubleConvertible](
+class LyapunovAnalysis[T : Fractional : DoubleConvertible](
     perturbationStrength : T,
     val vectorSpace : VectorSpace[T]) extends PerturbationAnalysis[T](perturbationStrength){
 
-    val num = implicitly[Integral[T]]
+    val num = implicitly[Fractional[T]]
     val converter = implicitly[DoubleConvertible[T]]
 
     implicit def fromDouble(a : Double) : T = converter.fromDouble(a)
-    def logNorm(vector : Iterable[T]) : T = log(vectorSpace.calcNorm(vector).toDouble())
+    def logNorm(vector : Iterable[T]) : T = fromDouble(log(vectorSpace.calcNorm(vector)))
 
     def calcSpectrum(
         runnable : TimeRunnable with StateAccessible[T], 
@@ -28,11 +28,11 @@ class LyapunovAnalysis[T : Integral : DoubleConvertible](
         // function to set states, run, and get States
         def run(states : Seq[T]) : Seq[T] = {
             synchronized {
-            	runnable.setStates(states)
+            	runnable.setStates(states.asJava)
             	runnable.runFor(timeStepLength)
             	runnable.getStates
             }
-        }
+        }.asScala.toSeq
 
         val dim = initialPoint.size
         var referencePoint = initialPoint
@@ -46,14 +46,19 @@ class LyapunovAnalysis[T : Integral : DoubleConvertible](
 
             val newPerturbPoints = perturbate(referencePoint, perturbVectors).view map run
             val newPerturbVectors = diff(newRererencePoint, newPerturbPoints).view map (_ map (_ / perturbationStrength))
-            val newOrthogonalPerturbVectors = vectorSpace.orthogonalizeVectors(newPerturbVectors)
+            val newOrthogonalPerturbVectors = vectorSpace.orthogonalizeVectors(
+                newPerturbVectors.map(_.map(fromDouble))
+            )
 
-            normSums = (normSums, newOrthogonalPerturbVectors).zipped.map((sum, vector) => sum + logNorm(vector))
+            normSums = (normSums, newOrthogonalPerturbVectors).zipped.map((sum, vector) =>
+                num.plus(sum, logNorm(vector))
+            )
             referencePoint = newRererencePoint
             perturbVectors = newOrthogonalPerturbVectors.view map vectorSpace.normalizeVector          
 
             normSums map { x =>
-            	if (x.toDouble().isNegInfinity) x else x / (timeStepLength * i.toDouble) }
+            	if (x.toDouble.isNegInfinity) x else x / (timeStepLength * i.toDouble)
+            }
         }
 //        val overallTime = iterations * timeStepLength
 //        normSums map (_ / overallTime) 
@@ -64,16 +69,17 @@ class LyapunovAnalysis[T : Integral : DoubleConvertible](
         initialPoint : Seq[T], 
         timeStepLength : Double, 
         iterations : Int,
-        normalizationThreshold : T) : Iterable[T] = {
+        normalizationThreshold : T
+    ) : Iterable[T] = {
 
         // function to set states, run, and get States
         def run(states : Seq[T]) : Seq[T] = {
             synchronized {
-            	runnable.setStates(states)
+            	runnable.setStates(states.asJava)
             	runnable.runFor(timeStepLength)
             	runnable.getStates()
             }
-        }
+        }.asScala.toSeq
 
         val dim = initialPoint.size
 //        val length = Math.sqrt((perturbationStrength * perturbationStrength).toDouble / dim.toDouble) : T
@@ -94,7 +100,8 @@ class LyapunovAnalysis[T : Integral : DoubleConvertible](
             val newPerturbVector = diff(newPerturbPoint, newRererencePoint)
             val distance = vectorSpace.calcNorm(newPerturbVector)
             val alpha = distance / perturbationStrength
-            perturbVector = newPerturbVector.view map (_ / alpha)                
+            // originally newPerturbVector.view (view dropped)
+            perturbVector = newPerturbVector map (_ / alpha)
             referencePoint = newRererencePoint                
         }
 
@@ -104,10 +111,11 @@ class LyapunovAnalysis[T : Integral : DoubleConvertible](
             val newPerturbVector = diff(newPerturbPoint, newRererencePoint)
             val distance = vectorSpace.calcNorm(newPerturbVector)
             val alpha = distance / perturbationStrength
-            perturbVector = newPerturbVector.view map (_ / alpha)                
+            // originally newPerturbVector.view (view dropped)
+            perturbVector = newPerturbVector.map(_ / alpha)
             referencePoint = newRererencePoint                
 
-            normSum += (log(alpha.toDouble()) : T)
+            normSum += log(alpha)
             if (normSum.toDouble.isNegInfinity) normSum else normSum / (timeStepLength * (i - iterationsToSkip)).toDouble
         }
 //        val overallTime = iterations * timeStepLength

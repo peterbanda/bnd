@@ -17,5 +17,5 @@ class AlteredStateCollector[T, C, S[X] : Copyable] extends Subscriber[StateEvent
 	    	case _ =>
 		}
 
-	def collected : Seq[(BigDecimal, Iterable[(C, T)])] = timeComponentStates
+	def collected: ListBuffer[(BigDecimal, Iterable[(C, T)])] = timeComponentStates
 }

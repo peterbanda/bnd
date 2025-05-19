@@ -1,6 +1,6 @@
 package com.bnd.math.business.rand
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 protected class ProductDistributionProvider[T](
         times : (T, T) => T)(

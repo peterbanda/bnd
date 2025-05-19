@@ -2,16 +2,18 @@ package com.bnd.math.business
 
 import org.junit.Test
 import java.{util => ju}
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import org.junit.Assert._
 import org.springframework.beans.factory.annotation.Autowired
 import com.bnd.function.enumerator.ListEnumeratorFactory
+import com.bnd.function.enumerator.DefaultListEnumeratorFactory
 import org.apache.commons.lang.StringUtils
 
-class GameOfLifeTableOutput extends MathTest {
+// Temporarily modifying to run without Spring
+class GameOfLifeTableOutput {
 
-    @Autowired
-    val listEnumeratorFactory : ListEnumeratorFactory = null
+    // Manual initialization instead of Spring autowiring
+    val listEnumeratorFactory = DefaultListEnumeratorFactory
 
 //    private def gameOfLifeFun(inputs : Seq[Boolean]) : Boolean = {
 //        val activeCell = inputs.head
@@ -37,13 +39,13 @@ class GameOfLifeTableOutput extends MathTest {
 
     @Test
     def tableOutput {
-        // create input enumerator
-		val inputEnumerator = listEnumeratorFactory.createInstance(true, false, true)
+      // create input enumerator
+		  val inputEnumerator = listEnumeratorFactory.createInstance(true, false, true)
 
 	    // enumerate inputs
-		val inputs = inputEnumerator.enumerate(9)
+		  val inputs = inputEnumerator.enumerate(9)
 
-		val outputs = inputs.map(input => if(gameOfLifeFun(input)) 1 else 0)
-		println(StringUtils.join(outputs, ','))
+		  val outputs = inputs.asScala.map(input => if (gameOfLifeFun(input.asScala.toSeq)) 1 else 0)
+		  println(outputs.mkString(", "))
     }
 }

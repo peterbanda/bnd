@@ -1,12 +1,12 @@
 package com.bnd.network.business
 
+import com.bnd.core.ClassUtil
+import com.bnd.core.ClassUtil.{toManifest, toType}
+import com.bnd.core.runnable.{ComposedStateProducer, DistanceFixedPointDetector, FixedPointDetector, FullStateAccessible, RunTraceHolder, SingleStateProducer, StateAlternation, StateAssignmentAlternation, StateEvent, StrictFixedPointDetector, TimeRunnable, TimeStateManager, TraceTimeRunnable}
+
 import java.io.Serializable
 import java.util.Collections
 import java.{lang => jl, util => ju}
-
-import com.bnd.core.ClassUtil
-import com.bnd.core.ClassUtil.{toManifest, toType}
-import com.bnd.core.runnable._
 import com.bnd.function.evaluator.FunctionEvaluatorFactory
 import com.bnd.network.BndNetworkException
 import com.bnd.network.business.function.ActivationFunctionFactory
@@ -14,10 +14,9 @@ import com.bnd.network.business.integrator.StatesWeightsIntegratorDef.StatesWeig
 import com.bnd.network.business.integrator.StatesWeightsIntegratorFactory
 import com.bnd.network.business.NetworkRunnableFactoryUtil.NetworkRunnable
 import com.bnd.network.domain._
-import com.bnd.core.runnable.{TimeRunnable, TimeStateManager, TraceTimeRunnable}
 
-import scala.collection.JavaConversions._
-import scala.collection.mutable.Publisher
+import scala.jdk.CollectionConverters._
+import scala.collection.mutable.{Publisher => ScalaPublisher}
 
 /**
  * @author © Peter Banda
@@ -89,7 +88,7 @@ private class NetworkRunnableFactoryImpl[T: Manifest](
     actionSeries: NetworkActionSeries[T]
   ): NetworkRunnable[T] =
     createGenericWithStateProducer(createInteractiveRunnable({ topology: Topology =>
-      networkScriptFactory(config)(actionSeries, topology.getAllNodes)
+      networkScriptFactory(config)(actionSeries, topology.getAllNodes.asScala.toSeq)
     }) _)(network, config)._1
 
   override def createInteractiveWithTrace(
@@ -118,10 +117,16 @@ private class NetworkRunnableFactoryImpl[T: Manifest](
     inputStream: Stream[Seq[T]]
   ) = {
     val runnableWithProducer = createGenericWithStateProducer(createInteractiveRunnable({ topology: Topology =>
-      if (topology.hasLayers)
-        createTrainingAlternations(initialDelay, singleIterationLength, topology.getLayers.head.getNonBiasNodes(), inputStream)
-      else
+      if (topology.hasLayers) {
+        val layers = topology.getLayers.asScala
+        if (layers.nonEmpty) {
+          createTrainingAlternations(initialDelay, singleIterationLength, layers.head.getNonBiasNodes().asScala, inputStream)
+        } else {
+          throw new BndNetworkException("Layers collection is empty.")
+        }
+      } else {
         throw new BndNetworkException("Layers expected for training network instance.")
+      }
     }) _)(network, config)
 
     (runnableWithProducer._1, createWeightAccessible(runnableWithProducer._2))
@@ -178,11 +183,11 @@ private class NetworkRunnableFactoryImpl[T: Manifest](
 
     // set default bias state if provided
     if (network.hasDefaultBiasState)
-      for (biasNode <- topology.getBiasNodes) yield runnable.setState(biasNode, network.getDefaultBiasState)
+      topology.getBiasNodes.asScala.foreach(biasNode => runnable.setState(biasNode, network.getDefaultBiasState))
 
     // set default non bias state if provided
     if (network.hasDefaultNonBiasState)
-      for (biasNode <- topology.getNonBiasNodes) yield runnable.setState(biasNode, network.getDefaultNonBiasState)
+      topology.getNonBiasNodes.asScala.foreach(nonBiasNode => runnable.setState(nonBiasNode, network.getDefaultNonBiasState))
 
     // add weights
     if (network.getWeightSetting() != null)
@@ -230,11 +235,12 @@ private class NetworkRunnableFactoryImpl[T: Manifest](
 
     val layerFunctionIterator = networkFunctions.iterator
 
-    val layers = for (layer <- initializedTopology.getLayers) yield
+    val layers = initializedTopology.getLayers.asScala.map(layer =>
       if (predecessorFunctionInherited || !layerFunctionIterator.hasNext)
         createStateProducer(layer, networkFunction, true)
       else
         createStateProducer(layer, layerFunctionIterator.next, false)
+    )
 
     val filteredLayers = layers.flatten
     if (filteredLayers.isEmpty)
@@ -258,7 +264,8 @@ private class NetworkRunnableFactoryImpl[T: Manifest](
     nodes: ju.List[TopologicalNode],
     networkFunction: NetworkFunction[T]
   ) = {
-    if (nodes.head.hasLocation)
+    val nodesList = nodes.asScala
+    if (nodesList.nonEmpty && nodesList.head.hasLocation)
       Collections.sort(nodes, new TopologicalNodeLocationComparator)
 
     val statesWeightsIntegrator: Option[StatesWeightsIntegrator[T]] =
@@ -270,21 +277,22 @@ private class NetworkRunnableFactoryImpl[T: Manifest](
       case customNetworkFunction : CustomNetworkFunction[T] =>
         if (statesWeightsIntegrator.isDefined)
           if (customNetworkFunction.activationFunction.isDefined)
-            nodes.map(NodeStateProducer(_, statesWeightsIntegrator.get, customNetworkFunction.activationFunction.get))
+            nodesList.map(node => NodeStateProducer(node, statesWeightsIntegrator.get, customNetworkFunction.activationFunction.get))
           else if (networkFunction.getActivationFunctionType != null && activationFunctionFactory.isDefined) {
             if (!customNetworkFunction.perNodeActivationFunctionWithParams.isDefined)
               throw new BndNetworkException("Per node activation function params expected for a custom network function.")
 
-            (nodes, customNetworkFunction.perNodeActivationFunctionWithParams.get).zipped.map{ case (node, (functionType, params)) =>
+            val params = customNetworkFunction.perNodeActivationFunctionWithParams.get
+            nodesList.zip(params).map { case (node, (functionType, params)) =>
               val outputFunction = activationFunctionFactory.get(functionType, Some(params))
               NodeStateProducer(node, statesWeightsIntegrator.get, outputFunction)
             }
 
           } else
-            nodes.map(NodeStateProducer(_, statesWeightsIntegrator.get))
+            nodesList.map(node => NodeStateProducer(node, statesWeightsIntegrator.get))
 
         else if (customNetworkFunction.weightFunction.isDefined)
-          nodes.map(NodeStateProducer(_, customNetworkFunction.weightFunction.get))
+          nodesList.map(node => NodeStateProducer(node, customNetworkFunction.weightFunction.get))
         else
           throw new BndNetworkException("No state-weight integrator nor custom weight function defined.")
 
@@ -292,15 +300,15 @@ private class NetworkRunnableFactoryImpl[T: Manifest](
         if (networkFunction.getActivationFunctionType != null && statesWeightsIntegrator.isDefined && activationFunctionFactory.isDefined) {
           val activationFunction = activationFunctionFactory.get(
             networkFunction.getActivationFunctionType,
-            if (networkFunction.getActivationFunctionParams != null) Some(networkFunction.getActivationFunctionParams) else None)
-          nodes.map(NodeStateProducer(_, statesWeightsIntegrator.get, activationFunction))
+            if (networkFunction.getActivationFunctionParams != null) Some(networkFunction.getActivationFunctionParams.asScala.toSeq) else None)
+          nodesList.map(node => NodeStateProducer(node, statesWeightsIntegrator.get, activationFunction))
         } else
           // no output function factory, output function type or SW integrator provided, moving to explicit function
           if (networkFunction.getFunction != null) {
             val functionEvaluator = functionEvaluatorFactory.createInstance(networkFunction.getFunction)
-            nodes.map(NodeStateProducer(_, functionEvaluator))
+            nodesList.map(node => NodeStateProducer(node, functionEvaluator))
           } else
-            nodes.map(NodeStateProducer(_, statesWeightsIntegrator.get))
+            nodesList.map(node => NodeStateProducer(node, statesWeightsIntegrator.get))
     }
 
     ComposedStateProducer.singleOutputInstance(stateProducers, networkFunction.getMultiComponentUpdaterType, true)
@@ -336,9 +344,9 @@ private[business] class MetaNetworkRunnableFactoryImpl(
   //    	case (servedClazz, integratorFactory) => (toType(servedClazz), integratorFactory)
   //    }
 
-  private val orderedNetworkWeightSetters = new ju.ArrayList[(Class[_], UntypedNetworkWeightBuilder[_])](classNetworkWeightSetterMap.toList)
-  private val orderedIntegratorFactories = new ju.ArrayList[(Class[_], StatesWeightsIntegratorFactory[_])](classIntegratorFactoryMap.toList)
-  private val orderedOutputFunctionFactories = new ju.ArrayList[(Class[_], ActivationFunctionFactory[_])](classOutputFunctionFactoryMap.toList)
+  private val orderedNetworkWeightSetters = classNetworkWeightSetterMap.asScala.toList
+  private val orderedIntegratorFactories = classIntegratorFactoryMap.asScala.toList
+  private val orderedOutputFunctionFactories = classOutputFunctionFactoryMap.asScala.toList
 
   override def createInstanceFromClass[T](clazz: Class[T]) = {
     implicit val manifest = toManifest(clazz)
@@ -386,7 +394,7 @@ private[business] class MetaNetworkRunnableFactoryImpl(
 
 object NetworkRunnableFactoryUtil {
 
-  type NetworkRunnable[T] = TimeRunnable with FullStateAccessible[T, TopologicalNode] with Publisher[StateEvent[T, ju.List]]
+  type NetworkRunnable[T] = TimeRunnable with FullStateAccessible[T, TopologicalNode] with ScalaPublisher[StateEvent[T, ju.List]]
 
   def apply[T](
     clazz: Class[T],

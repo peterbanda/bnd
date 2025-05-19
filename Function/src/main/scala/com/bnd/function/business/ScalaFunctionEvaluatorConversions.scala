@@ -1,8 +1,7 @@
 package com.bnd.function.business;
 
 import com.bnd.function.evaluator.FunctionEvaluator
-import scala.collection.JavaConversions._
-import com.bnd.core.CollectionElementsConversions._
+import scala.collection.JavaConverters._
 import java.{lang => jl, util => ju}
 import java.util.Arrays
 import scala.collection.Map
@@ -51,7 +50,7 @@ object ScalaFunctionEvaluatorConversions {
         recognizedComponentIndexMap : Map[C, Int]
     ) : Map[C, IN] => OUT = environment => {
         val indexedEnvironemnt = createIndexedEnvironment(environment, recognizedComponentIndexMap, {index : Int => index : Integer})
-        funEvaluator.evaluate(indexedEnvironemnt)
+        funEvaluator.evaluate(indexedEnvironemnt.asJava)
     }
 
     def functionEvaluatorToScalaDoubleMapFunction[IN, OUT, C1, C2](
@@ -61,7 +60,7 @@ object ScalaFunctionEvaluatorConversions {
     ) : (Map[C1, IN], Map[C2, IN]) => OUT = (environment1, environment2) => {
         val indexed1Environemnt = createIndexedEnvironment(environment1, recognizedComponentIndexMap1, {index : Int => 2 * index : Integer})
         val indexed2Environemnt = createIndexedEnvironment(environment2, recognizedComponentIndexMap2, {index : Int => 2 * index + 1 : Integer})
-        funEvaluator.evaluate(indexed1Environemnt ++ indexed2Environemnt)
+        funEvaluator.evaluate((indexed1Environemnt ++ indexed2Environemnt).asJava)
     }
 }
 

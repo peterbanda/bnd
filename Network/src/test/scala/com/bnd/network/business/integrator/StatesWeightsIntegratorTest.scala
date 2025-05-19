@@ -1,6 +1,6 @@
 package com.bnd.network.business.integrator
 
-import scala.collection.JavaConversions.seqAsJavaList
+import scala.jdk.CollectionConverters._
 
 import org.junit.Test
 
