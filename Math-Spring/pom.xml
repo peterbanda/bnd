@@ -2,33 +2,33 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bnd-lib</groupId>
-	<artifactId>bnd-math-spring_${scala.binary.version}</artifactId>
+	<artifactId>bnd-math-spring_2.13</artifactId>
 	<packaging>jar</packaging>
 	<name>bnd-math-spring</name>
 	<url>https://peterbanda.net</url>
 
 	<parent>
 		<groupId>com.bnd-lib</groupId>
-		<artifactId>bnd-parent</artifactId>
+		<artifactId>bnd-parent_2.13</artifactId>
 		<version>0.7.3</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.bnd-lib</groupId>
-			<artifactId>bnd-math_${scala.binary.version}</artifactId>
+			<artifactId>bnd-math_2.13</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.bnd-lib</groupId>
-			<artifactId>bnd-core-spring_${scala.binary.version}</artifactId>
+			<artifactId>bnd-core-spring_2.13</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.bnd-lib</groupId>
-			<artifactId>bnd-gnuplotter_${scala.binary.version}</artifactId>
+			<artifactId>bnd-gnuplotter_2.13</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
